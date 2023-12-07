@@ -5,8 +5,14 @@ from aws_cdk import CfnOutput
 from aws_cdk import CustomResource
 from aws_cdk import Duration
 
+from aws_cdk.aws_iam import AccountRootPrincipal
+from aws_cdk.aws_iam import Role
+from aws_cdk.aws_iam import PolicyStatement
+
 from aws_cdk.aws_eks import Cluster
 from aws_cdk.aws_eks import KubernetesVersion
+from aws_cdk.aws_eks import AlbControllerOptions
+from aws_cdk.aws_eks import AlbControllerVersion
 
 from constructs import Construct
 
@@ -23,6 +29,23 @@ class KubernetesStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
+        kubernetes_admin_role = Role(
+            self,
+            'KubernetesAdminRole',
+            assumed_by=AccountRootPrincipal(),
+        )
+
+        kubernetes_admin_role.add_to_policy(
+            PolicyStatement(
+                actions=[
+                    'eks:AccessKubernetesApi',
+                    'eks:Describe*',
+                    'eks:List*',
+                ],
+                resources=['*']
+            )
+        )
+
         cluster = Cluster(
             self,
             'Cluster',
@@ -30,10 +53,14 @@ class KubernetesStack(Stack):
             kubectl_layer=KubectlV27Layer(
                 self,
                 'kubectl',
-            )
+            ),
+            alb_controller=AlbControllerOptions(
+                version=AlbControllerVersion.V2_5_1,
+            ),
+            masters_role=kubernetes_admin_role,
         )
 
-        cluster.add_manifest(
+        manifest = cluster.add_manifest(
             'testpod',
             {
                 'apiVersion': 'v1',
@@ -56,6 +83,9 @@ class KubernetesStack(Stack):
                 }
             },
         )
+
+        manifest.node.add_dependency(cluster.alb_controller)
+
 
 
 KubernetesStack(
