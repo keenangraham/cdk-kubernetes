@@ -48,7 +48,7 @@ class KubernetesStack(Stack):
                             'image': 'paulbouwer/hello-kubernetes:1.5',
                             'ports': [
                                 {
-                                    'container_port': 8080
+                                    'containerPort': 8080
                                 }
                             ]
                         },
