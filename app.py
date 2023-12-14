@@ -4,6 +4,7 @@ from aws_cdk import RemovalPolicy
 from aws_cdk import CfnOutput
 from aws_cdk import CustomResource
 from aws_cdk import Duration
+from aws_cdk import Tags
 
 from aws_cdk.aws_iam import AccountRootPrincipal
 from aws_cdk.aws_iam import Role
@@ -58,6 +59,13 @@ class KubernetesStack(Stack):
                 version=AlbControllerVersion.V2_5_1,
             ),
             masters_role=kubernetes_admin_role,
+        )
+
+        Tags.of(
+            cluster
+        ).add(
+            'Name',
+            'KubernetesTest',
         )
 
         manifest = cluster.add_manifest(
