@@ -100,6 +100,7 @@ class KubernetesStack(Stack):
             chart='aws-ebs-csi-driver',
             repository='https://kubernetes-sigs.github.io/aws-ebs-csi-driver',
             namespace='kube-system',
+            version='2.25.0',
         )
 
         ebs_csi_driver_policy = ManagedPolicy.from_managed_policy_arn(
