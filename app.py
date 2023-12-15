@@ -9,6 +9,7 @@ from aws_cdk import Tags
 from aws_cdk.aws_iam import AccountRootPrincipal
 from aws_cdk.aws_iam import Role
 from aws_cdk.aws_iam import PolicyStatement
+from aws_cdk.aws_iam import ManagedPolicy
 
 from aws_cdk.aws_eks import Cluster
 from aws_cdk.aws_eks import KubernetesVersion
@@ -93,6 +94,21 @@ class KubernetesStack(Stack):
         )
 
         manifest.node.add_dependency(cluster.alb_controller)
+
+        cluster.add_helm_chart(
+            'EBSCSIDriver',
+            chart='aws-ebs-csi-driver',
+            repository='https://kubernetes-sigs.github.io/aws-ebs-csi-driver',
+            namespace='kube-system',
+        )
+
+        ebs_csi_driver_policy = ManagedPolicy.from_managed_policy_arn(
+            self,
+            'EBSCSIDriverPolicy',
+            managed_policy_arn='arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy'
+        )
+
+        cluster.default_nodegroup.role.add_managed_policy(ebs_csi_driver_policy)
 
 
 
