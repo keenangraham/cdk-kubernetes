@@ -59,6 +59,75 @@ class EBSDriver(Construct):
         cluster.default_nodegroup.role.add_managed_policy(ebs_csi_driver_policy)
 
 
+class EFSDriver(Construct):
+
+    def __init__(
+            self,
+            scope: Construct,
+            construct_id: str,
+            *,
+            cluster: Cluster,
+            **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        cluster.add_helm_chart(
+            'EFSCSIDriver',
+            chart='aws-efs-csi-driver',
+            repository='https://kubernetes-sigs.github.io/aws-efs-csi-driver',
+            namespace='kube-system',
+            version='2.5.2',
+        )
+
+        efs_csi_driver_policy = ManagedPolicy.from_managed_policy_arn(
+            self,
+            'EFSCSIDriverPolicy',
+            managed_policy_arn='arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy'
+        )
+
+        cluster.default_nodegroup.role.add_managed_policy(efs_csi_driver_policy)
+
+
+class TestApp(Construct):
+
+    def __init__(
+            self,
+            scope: Construct,
+            construct_id: str,
+            *,
+            cluster: Cluster,
+            **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        manifest = cluster.add_manifest(
+            'testpod',
+            {
+                'apiVersion': 'v1',
+                'kind': 'Pod',
+                'metadata': {
+                    'name': 'testpod',
+                },
+                'spec': {
+                    'containers': [
+                        {
+                            'name': 'testcontainer',
+                            'image': 'paulbouwer/hello-kubernetes:1.5',
+                            'ports': [
+                                {
+                                    'containerPort': 8080
+                                }
+                            ]
+                        },
+                    ]
+                }
+            },
+        )
+
+        manifest.node.add_dependency(cluster.alb_controller)
+
+
+
 class KubernetesStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
@@ -113,35 +182,21 @@ class KubernetesStack(Stack):
             'KubernetesTest',
         )
 
-        manifest = cluster.add_manifest(
-            'testpod',
-            {
-                'apiVersion': 'v1',
-                'kind': 'Pod',
-                'metadata': {
-                    'name': 'testpod',
-                },
-                'spec': {
-                    'containers': [
-                        {
-                            'name': 'testcontainer',
-                            'image': 'paulbouwer/hello-kubernetes:1.5',
-                            'ports': [
-                                {
-                                    'containerPort': 8080
-                                }
-                            ]
-                        },
-                    ]
-                }
-            },
+        test_app = TestApp(
+            self,
+            'TestApp',
+            cluster=cluster,
         )
-
-        manifest.node.add_dependency(cluster.alb_controller)
 
         ebs_driver = EBSDriver(
             self,
             'EBSDriver',
+            cluster=cluster,
+        )
+
+        efs_driver = EFSDriver(
+            self,
+            'EFSDriver',
             cluster=cluster,
         )
 
