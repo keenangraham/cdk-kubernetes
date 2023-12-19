@@ -25,8 +25,38 @@ from shared_infrastructure.cherry_lab.environments import US_WEST_2
 
 from aws_cdk.lambda_layer_kubectl_v27 import KubectlV27Layer
 
+from typing import Any
 
 app = App()
+
+
+class EBSDriver(Construct):
+
+    def __init__(
+            self,
+            scope: Construct,
+            construct_id: str,
+            *,
+            cluster: Cluster,
+            **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        cluster.add_helm_chart(
+            'EBSCSIDriver',
+            chart='aws-ebs-csi-driver',
+            repository='https://kubernetes-sigs.github.io/aws-ebs-csi-driver',
+            namespace='kube-system',
+            version='2.25.0',
+        )
+
+        ebs_csi_driver_policy = ManagedPolicy.from_managed_policy_arn(
+            self,
+            'EBSCSIDriverPolicy',
+            managed_policy_arn='arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy'
+        )
+
+        cluster.default_nodegroup.role.add_managed_policy(ebs_csi_driver_policy)
 
 
 class KubernetesStack(Stack):
@@ -109,21 +139,11 @@ class KubernetesStack(Stack):
 
         manifest.node.add_dependency(cluster.alb_controller)
 
-        cluster.add_helm_chart(
-            'EBSCSIDriver',
-            chart='aws-ebs-csi-driver',
-            repository='https://kubernetes-sigs.github.io/aws-ebs-csi-driver',
-            namespace='kube-system',
-            version='2.25.0',
-        )
-
-        ebs_csi_driver_policy = ManagedPolicy.from_managed_policy_arn(
+        ebs_driver = EBSDriver(
             self,
-            'EBSCSIDriverPolicy',
-            managed_policy_arn='arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy'
+            'EBSDriver',
+            cluster=cluster,
         )
-
-        cluster.default_nodegroup.role.add_managed_policy(ebs_csi_driver_policy)
 
 
 
