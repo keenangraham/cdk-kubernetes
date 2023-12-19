@@ -16,6 +16,7 @@ from aws_cdk.aws_eks import KubernetesVersion
 from aws_cdk.aws_eks import AlbControllerOptions
 from aws_cdk.aws_eks import AlbControllerVersion
 from aws_cdk.aws_eks import CapacityType
+from aws_cdk.aws_eks import CfnAddon
 
 from aws_cdk.aws_ec2 import InstanceType
 
@@ -127,6 +128,42 @@ class TestApp(Construct):
         manifest.node.add_dependency(cluster.alb_controller)
 
 
+class CloudWatchObservability(Construct):
+
+    def __init__(
+            self,
+            scope: Construct,
+            construct_id: str,
+            *,
+            cluster: Cluster,
+            **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        aws_xray_write_only_access = ManagedPolicy.from_managed_policy_arn(
+            self,
+            'AwsXrayWriteOnlyAccess',
+            managed_policy_arn='arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess',
+        )
+
+        cloudwatch_agent_server_policy = ManagedPolicy.from_managed_policy_arn(
+            self,
+            'CloudwatchAgenetServerPolicy',
+            managed_policy_arn='arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy',
+        )
+
+        cluster.default_nodegroup.role.add_managed_policy(aws_xray_write_only_access)
+        cluster.default_nodegroup.role.add_managed_policy(cloudwatch_agent_server_policy)
+
+        amazon_cloudwatch_observability_cfn_addon = CfnAddon(
+            self,
+            'AmazonCloudwatchObservabilityCfnAddon',
+            addon_name='amazon-cloudwatch-observability',
+            cluster_name=cluster.cluster_name,
+            addon_version='v1.1.1-eksbuild.1',
+            resolve_conflicts='OVERWRITE',
+        )
+
 
 class KubernetesStack(Stack):
 
@@ -200,6 +237,11 @@ class KubernetesStack(Stack):
             cluster=cluster,
         )
 
+        cloudwatch_observability = CloudWatchObservability(
+            self,
+            'CloudwatchObservability',
+            cluster=cluster
+        )
 
 
 KubernetesStack(
