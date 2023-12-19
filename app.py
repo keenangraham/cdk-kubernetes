@@ -15,6 +15,9 @@ from aws_cdk.aws_eks import Cluster
 from aws_cdk.aws_eks import KubernetesVersion
 from aws_cdk.aws_eks import AlbControllerOptions
 from aws_cdk.aws_eks import AlbControllerVersion
+from aws_cdk.aws_eks import CapacityType
+
+from aws_cdk.aws_ec2 import InstanceType
 
 from constructs import Construct
 
@@ -60,6 +63,17 @@ class KubernetesStack(Stack):
                 version=AlbControllerVersion.V2_5_1,
             ),
             masters_role=kubernetes_admin_role,
+        )
+
+        cluster.add_nodegroup_capacity(
+            'more-nodes',
+            min_size=1,
+            max_size=2,
+            disk_size=10,
+            capacity_type=CapacityType.SPOT,
+            instance_types=[
+                InstanceType('m5.large'),
+            ],
         )
 
         Tags.of(
