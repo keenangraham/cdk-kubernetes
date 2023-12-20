@@ -10,6 +10,7 @@ from aws_cdk.aws_iam import AccountRootPrincipal
 from aws_cdk.aws_iam import Role
 from aws_cdk.aws_iam import PolicyStatement
 from aws_cdk.aws_iam import ManagedPolicy
+from aws_cdk.aws_iam import User
 
 from aws_cdk.aws_eks import Cluster
 from aws_cdk.aws_eks import KubernetesVersion
@@ -165,6 +166,59 @@ class CloudWatchObservability(Construct):
         )
 
 
+class ClusterPermissions(Construct):
+
+    def __init__(
+            self,
+            scope: Construct,
+            construct_id: str,
+            *,
+            cluster: Cluster,
+            **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        manifest = cluster.add_manifest(
+            'ReadOnlyAdminClusterRoleBinding',
+            {
+                'apiVersion': 'rbac.authorization.k8s.io/v1',
+                'kind': 'ClusterRoleBinding',
+                'metadata': {
+                    'name': 'read-only-admin',
+                },
+                'roleRef': {
+                    'apiGroup': 'rbac.authorization.k8s.io',
+                    'kind': 'ClusterRole',
+                    'name': 'view'
+                },
+                'subjects': [
+                    {
+                        'apiGroup': 'rbac.authorization.k8s.io',
+                        'kind': 'Group',
+                        'name': 'read-only-admin'
+                    }
+                ]
+            }
+        )
+
+        users = [
+            'keenangraham',
+            'ojolanki',
+        ]
+
+        for user in users:
+           cluster.aws_auth.add_user_mapping(
+               User.from_user_name(
+                   self,
+                   f'User-{user}',
+                   user_name=user,
+            ),
+            groups=[
+                'read-only-admin',
+            ]
+        )
+
+
 class KubernetesStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
@@ -199,6 +253,12 @@ class KubernetesStack(Stack):
                 version=AlbControllerVersion.V2_5_1,
             ),
             masters_role=kubernetes_admin_role,
+        )
+
+        cluster_permissions = ClusterPermissions(
+            self,
+            'ClusterPermissions',
+            cluster=cluster,
         )
 
         cluster.add_nodegroup_capacity(
