@@ -20,6 +20,8 @@ from aws_cdk.aws_eks import CapacityType
 from aws_cdk.aws_eks import CfnAddon
 from aws_cdk.aws_eks import ServiceAccount
 
+from aws_cdk.aws_sqs import Queue
+
 from aws_cdk.aws_ec2 import InstanceType
 
 from constructs import Construct
@@ -36,12 +38,12 @@ app = App()
 class EBSDriver(Construct):
 
     def __init__(
-            self,
-            scope: Construct,
-            construct_id: str,
-            *,
-            cluster: Cluster,
-            **kwargs: Any
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -81,12 +83,12 @@ class EBSDriver(Construct):
 class EFSDriver(Construct):
 
     def __init__(
-            self,
-            scope: Construct,
-            construct_id: str,
-            *,
-            cluster: Cluster,
-            **kwargs: Any
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -126,12 +128,12 @@ class EFSDriver(Construct):
 class TestApp(Construct):
 
     def __init__(
-            self,
-            scope: Construct,
-            construct_id: str,
-            *,
-            cluster: Cluster,
-            **kwargs: Any
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -162,15 +164,95 @@ class TestApp(Construct):
         manifest.node.add_dependency(cluster.alb_controller)
 
 
+class PythonApp(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        queue: Queue,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        service_account = cluster.add_service_account(
+            'PythonServiceAccount',
+            name='python-sa',
+        )
+
+        queue.grant_send_messages(
+            service_account
+        )
+
+        queue.grant_consume_messages(
+            service_account
+        )
+
+        manifest = cluster.add_manifest(
+            'pythonapp',
+            {
+                'apiVersion': 'apps/v1',
+                'kind': 'Deployment',
+                'metadata': {
+                    'name': 'python-deployment',
+                    'labels': {
+                        'app': 'python'
+                    }
+                },
+                'spec': {
+                    'replicas': 1,
+                    'selector': {
+                        'matchLabels': {
+                            'app': 'python'
+                        }
+                    },
+                    'template': {
+                        'metadata': {
+                            'labels': {
+                                'app': 'python'
+                            }
+                        },
+                        'spec': {
+                            'serviceAccountName': 'python-sa',
+                            'containers': [
+                                {
+                                    'name': 'python',
+                                    'image': 'python:3.12.1-bullseye',
+                                    'command': ['/bin/sh', '-c', 'tail -f /dev/null'],
+                                    "env": [
+                                        {
+                                            'name': 'QUEUE_URL',
+                                            "value": queue.queue_url,
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+
+        )
+
+        manifest.node.add_dependency(
+            service_account
+        )
+        manifest.node.add_dependency(
+            queue
+        )
+
+
 class CloudWatchObservability(Construct):
 
     def __init__(
             self,
-            scope: Construct,
-            construct_id: str,
-            *,
-            cluster: Cluster,
-            **kwargs: Any
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -202,12 +284,12 @@ class CloudWatchObservability(Construct):
 class ClusterPermissions(Construct):
 
     def __init__(
-            self,
-            scope: Construct,
-            construct_id: str,
-            *,
-            cluster: Cluster,
-            **kwargs: Any
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -249,6 +331,27 @@ class ClusterPermissions(Construct):
             groups=[
                 'read-only-admin',
             ]
+        )
+
+
+class MetricsServer(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        chart = cluster.add_helm_chart(
+            'MetricsServer',
+            chart='metrics-server',
+            repository='https://kubernetes-sigs.github.io/metrics-server',
+            version='3.11.0',
+            namespace='kube-system',
         )
 
 
@@ -334,6 +437,24 @@ class KubernetesStack(Stack):
             self,
             'CloudwatchObservability',
             cluster=cluster
+        )
+
+        metrics_server = MetricsServer(
+            self,
+            'MetricsServer',
+            cluster=cluster,
+        )
+
+        queue = Queue(
+            self,
+            'TestEksQueue',
+        )
+
+        python_app = PythonApp(
+            self,
+            'PythonApp',
+            cluster=cluster,
+            queue=queue,
         )
 
 
