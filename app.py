@@ -233,7 +233,6 @@ class PythonApp(Construct):
                     }
                 }
             }
-
         )
 
         manifest.node.add_dependency(
