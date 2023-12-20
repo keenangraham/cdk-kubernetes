@@ -18,6 +18,7 @@ from aws_cdk.aws_eks import AlbControllerOptions
 from aws_cdk.aws_eks import AlbControllerVersion
 from aws_cdk.aws_eks import CapacityType
 from aws_cdk.aws_eks import CfnAddon
+from aws_cdk.aws_eks import ServiceAccount
 
 from aws_cdk.aws_ec2 import InstanceType
 
@@ -44,12 +45,10 @@ class EBSDriver(Construct):
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        cluster.add_helm_chart(
-            'EBSCSIDriver',
-            chart='aws-ebs-csi-driver',
-            repository='https://kubernetes-sigs.github.io/aws-ebs-csi-driver',
+        service_account = cluster.add_service_account(
+            'EBSDriverServiceAccount',
+            name='ebs-csi-controller-sa',
             namespace='kube-system',
-            version='2.25.0',
         )
 
         ebs_csi_driver_policy = ManagedPolicy.from_managed_policy_arn(
@@ -58,7 +57,25 @@ class EBSDriver(Construct):
             managed_policy_arn='arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy'
         )
 
-        cluster.default_nodegroup.role.add_managed_policy(ebs_csi_driver_policy)
+        service_account.role.add_managed_policy(ebs_csi_driver_policy)
+
+        chart = cluster.add_helm_chart(
+            'EBSCSIDriver',
+            chart='aws-ebs-csi-driver',
+            repository='https://kubernetes-sigs.github.io/aws-ebs-csi-driver',
+            namespace='kube-system',
+            version='2.25.0',
+            values={
+                'controller': {
+                    'serviceAccount': {
+                        'create': False
+                    }
+                }
+            }
+        )
+
+        chart.node.add_dependency(service_account)
+
 
 
 class EFSDriver(Construct):
@@ -73,12 +90,10 @@ class EFSDriver(Construct):
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        cluster.add_helm_chart(
-            'EFSCSIDriver',
-            chart='aws-efs-csi-driver',
-            repository='https://kubernetes-sigs.github.io/aws-efs-csi-driver',
+        service_account = cluster.add_service_account(
+            'EFSDriverServiceAccount',
+            name='efs-csi-controller-sa',
             namespace='kube-system',
-            version='2.5.2',
         )
 
         efs_csi_driver_policy = ManagedPolicy.from_managed_policy_arn(
@@ -87,7 +102,25 @@ class EFSDriver(Construct):
             managed_policy_arn='arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy'
         )
 
-        cluster.default_nodegroup.role.add_managed_policy(efs_csi_driver_policy)
+        service_account.role.add_managed_policy(efs_csi_driver_policy)
+
+        chart = cluster.add_helm_chart(
+            'EFSCSIDriver',
+            chart='aws-efs-csi-driver',
+            repository='https://kubernetes-sigs.github.io/aws-efs-csi-driver',
+            namespace='kube-system',
+            version='2.5.2',
+            values={
+                'controller': {
+                    'serviceAccount': {
+                        'create': False
+                    }
+                }
+            }
+        )
+
+        chart.node.add_dependency(service_account)
+
 
 
 class TestApp(Construct):
@@ -286,9 +319,9 @@ class KubernetesStack(Stack):
         )
 
         ebs_driver = EBSDriver(
-            self,
-            'EBSDriver',
-            cluster=cluster,
+           self,
+             'EBSDriver',
+           cluster=cluster,
         )
 
         efs_driver = EFSDriver(
