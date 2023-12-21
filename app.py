@@ -406,6 +406,7 @@ class KubernetesStack(Stack):
             instance_types=[
                 InstanceType('m5.large'),
             ],
+            node_role=cluster.default_nodegroup.role,
         )
 
         Tags.of(
