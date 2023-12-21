@@ -398,8 +398,9 @@ class KubernetesStack(Stack):
 
         cluster.add_nodegroup_capacity(
             'more-nodes',
-            min_size=1,
-            max_size=2,
+            min_size=0,
+            max_size=1,
+            desired_size=0,
             disk_size=10,
             capacity_type=CapacityType.SPOT,
             instance_types=[
