@@ -10,7 +10,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-    - host: test-eks.api.encodedcc.org
+    - host: test-eks-nginx.api.encodedcc.org
       http:
         paths:
           - pathType: Prefix

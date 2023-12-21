@@ -200,7 +200,8 @@ class ExternalDns(Construct):
                     'annotations': {
                         'eks.amazonaws.com/role-arn': service_account.role.role_arn
                     }
-                }
+                },
+                'policy': 'sync'
             }
         )
 
