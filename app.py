@@ -11,6 +11,7 @@ from aws_cdk.aws_iam import Role
 from aws_cdk.aws_iam import PolicyStatement
 from aws_cdk.aws_iam import ManagedPolicy
 from aws_cdk.aws_iam import User
+from aws_cdk.aws_iam import Effect
 
 from aws_cdk.aws_eks import Cluster
 from aws_cdk.aws_eks import KubernetesVersion
@@ -23,6 +24,8 @@ from aws_cdk.aws_eks import ServiceAccount
 from aws_cdk.aws_sqs import Queue
 
 from aws_cdk.aws_ec2 import InstanceType
+
+from aws_cdk.aws_route53 import HostedZone
 
 from constructs import Construct
 
@@ -124,6 +127,85 @@ class EFSDriver(Construct):
         chart.node.add_dependency(service_account)
 
 
+class ExternalDns(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        manifest = cluster.add_manifest(
+            'externaldns-ns',
+            {
+                'apiVersion': 'v1',
+                'kind': 'Namespace',
+                'metadata': {
+                    'name': 'external-dns',
+                }
+            }
+        )
+
+        service_account = cluster.add_service_account(
+            'ExternalDnsServiceAccount',
+            name='external-dns-sa',
+            namespace='external-dns',
+        )
+
+        service_account.node.add_dependency(manifest)
+
+        service_account.add_to_principal_policy(
+             PolicyStatement(
+                effect=Effect.ALLOW,
+                actions=[
+                    'route53:ChangeResourceRecordSets',
+                    'route53:ListResourceRecordSets'
+                ],
+                resources=[
+                    HostedZone.from_hosted_zone_id(
+                        self,
+                        'ApiEncodeDccOrg',
+                        'Z100726339CN2ETJI2S55',
+                    ).hosted_zone_arn
+                ]
+            )
+        )
+
+        service_account.add_to_principal_policy(
+            PolicyStatement(
+                effect=Effect.ALLOW,
+                actions=[
+                    'route53:ListHostedZones'
+                ],
+                resources=[
+                    '*'
+                ]
+            )
+        )
+
+        chart = cluster.add_helm_chart(
+            'ExternalDns',
+            chart='external-dns',
+            repository='https://kubernetes-sigs.github.io/external-dns/',
+            namespace='external-dns',
+            version='1.13.1',
+            values={
+                'serviceAccount': {
+                    'create': False,
+                    'name': 'external-dns-sa',
+                    'annotations': {
+                        'eks.amazonaws.com/role-arn': service_account.role.role_arn
+                    }
+                }
+            }
+        )
+
+        chart.node.add_dependency(service_account)
+
 
 class TestApp(Construct):
 
@@ -221,10 +303,10 @@ class PythonApp(Construct):
                                     'name': 'python',
                                     'image': 'python:3.12.1-bullseye',
                                     'command': ['/bin/sh', '-c', 'tail -f /dev/null'],
-                                    "env": [
+                                    'env': [
                                         {
                                             'name': 'QUEUE_URL',
-                                            "value": queue.queue_url,
+                                            'value': queue.queue_url,
                                         }
                                     ]
                                 }
@@ -456,6 +538,12 @@ class KubernetesStack(Stack):
             'PythonApp',
             cluster=cluster,
             queue=queue,
+        )
+
+        external_dns = ExternalDns(
+            self,
+            'ExternalDns',
+            cluster=cluster,
         )
 
 
