@@ -159,7 +159,7 @@ class ExternalDns(Construct):
         service_account.node.add_dependency(manifest)
 
         service_account.add_to_principal_policy(
-             PolicyStatement(
+            PolicyStatement(
                 effect=Effect.ALLOW,
                 actions=[
                     'route53:ChangeResourceRecordSets',
@@ -329,7 +329,7 @@ class PythonApp(Construct):
 class CloudWatchObservability(Construct):
 
     def __init__(
-            self,
+        self,
         scope: Construct,
         construct_id: str,
         *,
@@ -404,16 +404,16 @@ class ClusterPermissions(Construct):
         ]
 
         for user in users:
-           cluster.aws_auth.add_user_mapping(
-               User.from_user_name(
-                   self,
-                   f'User-{user}',
-                   user_name=user,
-            ),
-            groups=[
-                'read-only-admin',
-            ]
-        )
+            cluster.aws_auth.add_user_mapping(
+                User.from_user_name(
+                    self,
+                    f'User-{user}',
+                    user_name=user,
+                ),
+                groups=[
+                    'read-only-admin',
+                ]
+            )
 
 
 class MetricsServer(Construct):
@@ -508,6 +508,9 @@ class ArgoCD(Construct):
             }
         )
 
+        manifest.node.add_dependency(chart)
+        manifest.node.add_dependency(cluster.alb_controller)
+
 
 class KubernetesStack(Stack):
 
@@ -579,7 +582,7 @@ class KubernetesStack(Stack):
 
         ebs_driver = EBSDriver(
            self,
-             'EBSDriver',
+            'EBSDriver',
            cluster=cluster,
         )
 
