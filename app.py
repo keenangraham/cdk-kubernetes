@@ -437,6 +437,78 @@ class MetricsServer(Construct):
         )
 
 
+class ArgoCD(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        external_url: str,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        chart = cluster.add_helm_chart(
+            'ArgoCD',
+            chart='argo-cd',
+            release='argocd',
+            repository='https://argoproj.github.io/argo-helm',
+            version='5.52.1',
+            namespace='argocd',
+            values={
+                'configs': {
+                    'params': {
+                        'server.insecure': True
+                    }
+                }
+            }
+        )
+
+        manifest = cluster.add_manifest(
+            'argocd-ingress',
+            {
+                'apiVersion': 'networking.k8s.io/v1',
+                'kind': 'Ingress',
+                'metadata': {
+                    'annotations': {
+                        'alb.ingress.kubernetes.io/listen-ports': '[{\"HTTP\": 80}, {\"HTTPS\":443}]',
+                        'alb.ingress.kubernetes.io/scheme': 'internet-facing',
+                        'alb.ingress.kubernetes.io/ssl-redirect': '443',
+                        'alb.ingress.kubernetes.io/target-type': 'ip',
+                    },
+                    'name': 'argocd-ingress',
+                    'namespace': 'argocd',
+                },
+                'spec': {
+                    'ingressClassName': 'alb',
+                    'rules': [
+                        {
+                            'host': external_url,
+                            'http': {
+                                'paths': [
+                                    {
+                                        'backend': {
+                                            'service': {
+                                                'name': 'argocd-server',
+                                                'port': {
+                                                    'number': 80
+                                                }
+                                            }
+                                        },
+                                        'path': '/',
+                                        'pathType': 'Prefix'
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        )
+
+
 class KubernetesStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
@@ -545,6 +617,13 @@ class KubernetesStack(Stack):
             self,
             'ExternalDns',
             cluster=cluster,
+        )
+
+        argocd = ArgoCD(
+            self,
+            'ArgoCD',
+            cluster=cluster,
+            external_url='argocd.api.encodedcc.org',
         )
 
 
