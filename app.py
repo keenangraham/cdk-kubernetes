@@ -187,7 +187,7 @@ class ExternalDns(Construct):
             )
         )
 
-        chart = cluster.add_helm_chart(
+        self.chart = cluster.add_helm_chart(
             'ExternalDns',
             chart='external-dns',
             repository='https://kubernetes-sigs.github.io/external-dns/',
@@ -205,7 +205,7 @@ class ExternalDns(Construct):
             }
         )
 
-        chart.node.add_dependency(service_account)
+        self.chart.node.add_dependency(service_account)
 
 
 class TestApp(Construct):
@@ -466,7 +466,7 @@ class ArgoCD(Construct):
             }
         )
 
-        manifest = cluster.add_manifest(
+        self.manifest = cluster.add_manifest(
             'argocd-ingress',
             {
                 'apiVersion': 'networking.k8s.io/v1',
@@ -508,8 +508,8 @@ class ArgoCD(Construct):
             }
         )
 
-        manifest.node.add_dependency(chart)
-        manifest.node.add_dependency(cluster.alb_controller)
+        self.manifest.node.add_dependency(chart)
+        self.manifest.node.add_dependency(cluster.alb_controller)
 
 
 class KubernetesStack(Stack):
@@ -629,10 +629,14 @@ class KubernetesStack(Stack):
             external_url='argocd.api.encodedcc.org',
         )
 
+        argocd.manifest.node.add_dependency(
+            external_dns.chart
+        )
+
 
 KubernetesStack(
     app,
-    'KubernetesStack',
+    'KubernetesStack2',
     env=US_WEST_2,
 )
 
