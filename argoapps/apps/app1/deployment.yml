@@ -7,12 +7,17 @@ spec:
   selector:
     matchLabels:
       app: app1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 0
   template:
     metadata:
       labels:
         app: app1
       annotations:
-        config-version: "5"
+        config-version: "6"
     spec:
       containers:
       - name: app1
