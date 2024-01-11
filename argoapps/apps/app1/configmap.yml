@@ -10,4 +10,4 @@ data:
 
     @app.get("/")
     def read_root():
-        return {"!!!Hello!": "Worrrld!"}
+        return {"!!!Hello???!": "Worrrld!"}
