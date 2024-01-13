@@ -33,6 +33,8 @@ from shared_infrastructure.cherry_lab.environments import US_WEST_2
 
 from aws_cdk.lambda_layer_kubectl_v27 import KubectlV27Layer
 
+from cdk_eks_karpenter import Karpenter
+
 from typing import Any
 
 app = App()
@@ -631,6 +633,13 @@ class KubernetesStack(Stack):
 
         argocd.manifest.node.add_dependency(
             external_dns.chart
+        )
+
+        karpenter = Karpenter(
+            self,
+            'Karpenter',
+            cluster=cluster,
+            version='v0.33.1',
         )
 
 
