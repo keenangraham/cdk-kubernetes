@@ -439,6 +439,81 @@ class MetricsServer(Construct):
         )
 
 
+class ClusterAutoscaler(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        karpenter = Karpenter(
+            self,
+            'Karpenter',
+            cluster=cluster,
+            version='v0.33.1',
+        )
+
+        node_class = karpenter.add_ec2_node_class(
+            'nodeclass',
+            {
+                'amiFamily': 'AL2',
+                'subnetSelectorTerms': [
+                    {
+                        'tags': {
+                            'Name': f'{Stack.of(self).stack_name}/Cluster/{cluster.vpc.node.id}/PrivateSubnet*',
+                        },
+                    },
+                ],
+                'securityGroupSelectorTerms': [
+                    {
+                        'tags': {
+                            'aws:eks:cluster-name': cluster.cluster_name,
+                        },
+                    },
+                ],
+                'role': karpenter.node_role.role_name
+            }
+        )
+
+        karpenter.add_node_pool(
+            'nodepool',
+            {
+                'template': {
+                    'spec': {
+                        'nodeClassRef': {
+                            'apiVersion': 'karpenter.k8s.aws/v1beta1',
+                            'kind': 'EC2NodeClass',
+                            'name': node_class['name'],
+                        },
+                        'requirements': [
+                            {
+                                'key': 'karpenter.k8s.aws/instance-category',
+                                'operator': 'In',
+                                'values': ['c', 'm', 'r'],
+                            },
+                            {
+                                'key': 'kubernetes.io/arch',
+                                'operator': 'In',
+                                'values': ['amd64'],
+                            },
+                            {
+                                'key': 'karpenter.k8s.aws/instance-generation',
+                                'operator': 'Gt',
+                                'values': ['5']
+                            },
+                        ],
+                    },
+                },
+            }
+        )
+
+
+
 class ArgoCD(Construct):
 
     def __init__(
@@ -512,6 +587,8 @@ class ArgoCD(Construct):
 
         self.manifest.node.add_dependency(chart)
         self.manifest.node.add_dependency(cluster.alb_controller)
+
+
 
 
 class KubernetesStack(Stack):
@@ -635,11 +712,10 @@ class KubernetesStack(Stack):
             external_dns.chart
         )
 
-        karpenter = Karpenter(
+        cluster_autoscaler = ClusterAutoscaler(
             self,
-            'Karpenter',
+            'ClusterAutoscaler',
             cluster=cluster,
-            version='v0.33.1',
         )
 
 
