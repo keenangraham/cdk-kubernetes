@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s3test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: s3test
+  template:
+    metadata:
+      labels:
+        app: s3test
+    spec:
+      containers:
+        - name: s3test
+          image: python:3.12.1-bullseye
+          command: ['/bin/sh', '-c', 'tail -f /dev/null']
+          resources:
+            requests:
+              cpu: "0.25"
+            limits:
+              cpu: 1
+          volumeMounts:
+            - name: s3-encode-blobs-dev-storage
+              mountPath: /encode-blobs-dev
+            - name: s3-encode-files-dev-storage
+              mountPath: /encode-files-dev
+      volumes:
+        - name: s3-encode-blobs-dev-storage
+          persistentVolumeClaim:
+            claimName: s3-encode-blobs-dev-claim
+        - name: s3-encode-files-dev-storage
+          persistentVolumeClaim:
+            claimName: s3-encode-files-dev-claim

@@ -129,6 +129,50 @@ class EFSDriver(Construct):
         chart.node.add_dependency(service_account)
 
 
+class S3Driver(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        service_account = cluster.add_service_account(
+            'S3DriverServiceAccount',
+            name='s3-csi-driver-sa',
+            namespace='kube-system',
+        )
+
+        s3_csi_driver_policy = ManagedPolicy.from_managed_policy_arn(
+            self,
+            'S3CSIDriverPolicy',
+            managed_policy_arn='arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess',
+        )
+
+        service_account.role.add_managed_policy(s3_csi_driver_policy)
+
+        chart = cluster.add_helm_chart(
+            'S3CSIDriver',
+            chart='aws-mountpoint-s3-csi-driver',
+            repository='https://awslabs.github.io/mountpoint-s3-csi-driver',
+            namespace='kube-system',
+            version='1.2.0',
+            values={
+                'node': {
+                    'serviceAccount': {
+                        'create': False
+                    }
+                }
+            }
+        )
+
+        chart.node.add_dependency(service_account)
+
+
 class ExternalDns(Construct):
 
     def __init__(
@@ -625,6 +669,7 @@ class KubernetesStack(Stack):
                 version=AlbControllerVersion.V2_5_1,
             ),
             masters_role=kubernetes_admin_role,
+            default_capacity=1,
         )
 
         cluster_permissions = ClusterPermissions(
@@ -660,14 +705,20 @@ class KubernetesStack(Stack):
         )
 
         ebs_driver = EBSDriver(
-           self,
+            self,
             'EBSDriver',
-           cluster=cluster,
+            cluster=cluster,
         )
 
         efs_driver = EFSDriver(
             self,
             'EFSDriver',
+            cluster=cluster,
+        )
+
+        s3_driver = S3Driver(
+            self,
+            'S3Driver',
             cluster=cluster,
         )
 
