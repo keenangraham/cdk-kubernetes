@@ -551,6 +551,11 @@ class ClusterAutoscaler(Construct):
                                 'values': ['5']
                             },
                         ],
+                        'limits': {
+                            'cpu': '10',
+                            'memory': '50Gi',
+                            'nvidia.com/gpu': '2',
+                        },
                     },
                 },
             }
