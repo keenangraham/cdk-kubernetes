@@ -550,17 +550,16 @@ class ClusterAutoscaler(Construct):
                                 'operator': 'Gt',
                                 'values': ['5']
                             },
-                        ],
-                        'limits': {
-                            'cpu': '10',
-                            'memory': '50Gi',
-                            'nvidia.com/gpu': '2',
-                        },
+                        ]
+                    },
+                    'limits': {
+                        'cpu': '10',
+                        'memory': '50Gi',
+                        'nvidia.com/gpu': '2',
                     },
                 },
             }
         )
-
 
 
 class ArgoCD(Construct):
@@ -777,7 +776,7 @@ class KubernetesStack(Stack):
 
 KubernetesStack(
     app,
-    'KubernetesStack2',
+    'KubernetesStack',
     env=US_WEST_2,
 )
 
