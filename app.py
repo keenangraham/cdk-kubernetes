@@ -499,7 +499,7 @@ class ClusterAutoscaler(Construct):
             self,
             'Karpenter',
             cluster=cluster,
-            version='v1.1.0',
+            version='1.1.0',
             namespace='kube-system',
         )
 
