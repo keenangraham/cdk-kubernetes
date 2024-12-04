@@ -503,7 +503,7 @@ class ClusterAutoscaler(Construct):
             namespace='kube-system',
         )
 
-        node_class = karpenter.add_ec2_node_class(
+        karpenter.add_ec2_node_class(
             'nodeclass',
             {
                 'amiFamily': 'AL2',
@@ -531,7 +531,7 @@ class ClusterAutoscaler(Construct):
                 'template': {
                     'spec': {
                         'nodeClassRef': {
-                            'apiVersion': 'karpenter.sh/v1',
+                            'apiVersion': 'karpenter.k8s.aws/v1',
                             'kind': 'EC2NodeClass',
                             'name': node_class['name'],
                         },
@@ -777,7 +777,7 @@ class KubernetesStack(Stack):
 
 KubernetesStack(
     app,
-    'KubernetesStack31',
+    'KubernetesStack311',
     env=US_WEST_2,
 )
 
