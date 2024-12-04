@@ -503,7 +503,7 @@ class ClusterAutoscaler(Construct):
             namespace='kube-system',
         )
 
-        karpenter.add_ec2_node_class(
+        node_class = karpenter.add_ec2_node_class(
             'nodeclass',
             {
                 'amiFamily': 'AL2',
