@@ -499,7 +499,8 @@ class ClusterAutoscaler(Construct):
             self,
             'Karpenter',
             cluster=cluster,
-            version='v0.33.1',
+            version='v0.33.11',
+            namespace='kube-system',
         )
 
         node_class = karpenter.add_ec2_node_class(
@@ -530,7 +531,7 @@ class ClusterAutoscaler(Construct):
                 'template': {
                     'spec': {
                         'nodeClassRef': {
-                            'apiVersion': 'karpenter.k8s.aws/v1beta1',
+                            'apiVersion': 'karpenter.sh/v1',
                             'kind': 'EC2NodeClass',
                             'name': node_class['name'],
                         },
@@ -551,12 +552,12 @@ class ClusterAutoscaler(Construct):
                                 'values': ['5']
                             },
                         ]
-                    },
-                    'limits': {
-                        'cpu': '10',
-                        'memory': '50Gi',
-                        'nvidia.com/gpu': '2',
-                    },
+                    }
+                },
+                'limits': {
+                    'cpu': '10',
+                    'memory': '50Gi',
+                    'nvidia.com/gpu': '2',
                 },
             }
         )
@@ -686,7 +687,7 @@ class KubernetesStack(Stack):
             'more-nodes',
             min_size=0,
             max_size=1,
-            desired_size=0,
+            desired_size=1,
             disk_size=10,
             capacity_type=CapacityType.SPOT,
             instance_types=[
@@ -767,11 +768,11 @@ class KubernetesStack(Stack):
             external_dns.chart
         )
 
-        cluster_autoscaler = ClusterAutoscaler(
-            self,
-            'ClusterAutoscaler',
-            cluster=cluster,
-        )
+#        cluster_autoscaler = ClusterAutoscaler(
+#            self,
+#            'ClusterAutoscaler',
+#            cluster=cluster,
+#        )
 
 
 KubernetesStack(
