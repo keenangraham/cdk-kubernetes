@@ -521,6 +521,7 @@ class ClusterAutoscaler(Construct):
                     },
                 ],
                 'role': karpenter.node_role.role_name,
+                'amiFamily': 'AL2023',
                 'amiSelectorTerms': [
                     {
                         'alias': 'al2023@v20240807'
