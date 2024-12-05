@@ -461,6 +461,29 @@ class ClusterPermissions(Construct):
                 ]
             )
 
+class KubeArangoDB(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        chart = cluster.add_helm_chart(
+            'KubeArangoDB',
+            chart='kube-arangodb',
+            repository='https://arangodb.github.io/kube-arangodb',
+            version='1.2.43',
+            namespace='kube-system',
+            values={
+                'operator.features.storage': 'true',
+            },
+        )
+
 
 class MetricsServer(Construct):
 
@@ -776,6 +799,12 @@ class KubernetesStack(Stack):
         cluster_autoscaler = ClusterAutoscaler(
             self,
             'ClusterAutoscaler',
+            cluster=cluster,
+        )
+
+        kube_arangodb = KubeArangoDB(
+            self,
+            'KubeArangoDB',
             cluster=cluster,
         )
 
