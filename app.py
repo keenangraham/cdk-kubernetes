@@ -692,7 +692,7 @@ class KubernetesStack(Stack):
             'more-nodes',
             min_size=0,
             max_size=1,
-            desired_size=1,
+            desired_size=0,
             disk_size=10,
             capacity_type=CapacityType.SPOT,
             instance_types=[
