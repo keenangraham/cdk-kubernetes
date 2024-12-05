@@ -31,7 +31,7 @@ from constructs import Construct
 
 from shared_infrastructure.cherry_lab.environments import US_WEST_2
 
-from aws_cdk.lambda_layer_kubectl_v27 import KubectlV27Layer
+from aws_cdk.lambda_layer_kubectl_v31 import KubectlV31Layer
 
 from cdk_eks_karpenter import Karpenter
 
@@ -71,7 +71,7 @@ class EBSDriver(Construct):
             chart='aws-ebs-csi-driver',
             repository='https://kubernetes-sigs.github.io/aws-ebs-csi-driver',
             namespace='kube-system',
-            version='2.25.0',
+            version='2.37.0',
             values={
                 'controller': {
                     'serviceAccount': {
@@ -116,7 +116,7 @@ class EFSDriver(Construct):
             chart='aws-efs-csi-driver',
             repository='https://kubernetes-sigs.github.io/aws-efs-csi-driver',
             namespace='kube-system',
-            version='2.5.2',
+            version='3.1.1',
             values={
                 'controller': {
                     'serviceAccount': {
@@ -160,7 +160,7 @@ class S3Driver(Construct):
             chart='aws-mountpoint-s3-csi-driver',
             repository='https://awslabs.github.io/mountpoint-s3-csi-driver',
             namespace='kube-system',
-            version='1.2.0',
+            version='1.10.0',
             values={
                 'node': {
                     'serviceAccount': {
@@ -238,7 +238,7 @@ class ExternalDns(Construct):
             chart='external-dns',
             repository='https://kubernetes-sigs.github.io/external-dns/',
             namespace='external-dns',
-            version='1.13.1',
+            version='1.15.0',
             values={
                 'serviceAccount': {
                     'create': False,
@@ -404,7 +404,7 @@ class CloudWatchObservability(Construct):
             'AmazonCloudwatchObservabilityCfnAddon',
             addon_name='amazon-cloudwatch-observability',
             cluster_name=cluster.cluster_name,
-            addon_version='v1.1.1-eksbuild.1',
+            addon_version='v2.5.0-eksbuild.1',
             resolve_conflicts='OVERWRITE',
         )
 
@@ -478,7 +478,7 @@ class MetricsServer(Construct):
             'MetricsServer',
             chart='metrics-server',
             repository='https://kubernetes-sigs.github.io/metrics-server',
-            version='3.11.0',
+            version='3.12.2',
             namespace='kube-system',
         )
 
@@ -499,14 +499,13 @@ class ClusterAutoscaler(Construct):
             self,
             'Karpenter',
             cluster=cluster,
-            version='v0.33.11',
+            version='1.1.0',
             namespace='kube-system',
         )
 
         node_class = karpenter.add_ec2_node_class(
             'nodeclass',
             {
-                'amiFamily': 'AL2',
                 'subnetSelectorTerms': [
                     {
                         'tags': {
@@ -521,7 +520,13 @@ class ClusterAutoscaler(Construct):
                         },
                     },
                 ],
-                'role': karpenter.node_role.role_name
+                'role': karpenter.node_role.role_name,
+                'amiFamily': 'AL2023',
+                'amiSelectorTerms': [
+                    {
+                        'alias': 'al2023@v20241121'
+                    },
+                ],
             }
         )
 
@@ -531,7 +536,7 @@ class ClusterAutoscaler(Construct):
                 'template': {
                     'spec': {
                         'nodeClassRef': {
-                            'apiVersion': 'karpenter.sh/v1',
+                            'group': 'karpenter.k8s.aws',
                             'kind': 'EC2NodeClass',
                             'name': node_class['name'],
                         },
@@ -581,7 +586,7 @@ class ArgoCD(Construct):
             chart='argo-cd',
             release='argocd',
             repository='https://argoproj.github.io/argo-helm',
-            version='5.52.1',
+            version='7.7.7',
             namespace='argocd',
             values={
                 'configs': {
@@ -665,13 +670,13 @@ class KubernetesStack(Stack):
         cluster = Cluster(
             self,
             'Cluster',
-            version=KubernetesVersion.V1_27,
-            kubectl_layer=KubectlV27Layer(
+            version=KubernetesVersion.V1_31,
+            kubectl_layer=KubectlV31Layer(
                 self,
                 'kubectl',
             ),
             alb_controller=AlbControllerOptions(
-                version=AlbControllerVersion.V2_5_1,
+                version=AlbControllerVersion.V2_8_2,
             ),
             masters_role=kubernetes_admin_role,
             default_capacity=1,
@@ -687,7 +692,7 @@ class KubernetesStack(Stack):
             'more-nodes',
             min_size=0,
             max_size=1,
-            desired_size=1,
+            desired_size=0,
             disk_size=10,
             capacity_type=CapacityType.SPOT,
             instance_types=[
@@ -761,23 +766,23 @@ class KubernetesStack(Stack):
             self,
             'ArgoCD',
             cluster=cluster,
-            external_url='argocd.api.encodedcc.org',
+            external_url='nargocd.api.encodedcc.org',
         )
 
         argocd.manifest.node.add_dependency(
             external_dns.chart
         )
 
-#        cluster_autoscaler = ClusterAutoscaler(
-#            self,
-#            'ClusterAutoscaler',
-#            cluster=cluster,
-#        )
+        cluster_autoscaler = ClusterAutoscaler(
+            self,
+            'ClusterAutoscaler',
+            cluster=cluster,
+        )
 
 
 KubernetesStack(
     app,
-    'KubernetesStack',
+    'KubernetesStack31',
     env=US_WEST_2,
 )
 
