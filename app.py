@@ -536,7 +536,7 @@ class ClusterAutoscaler(Construct):
                 'template': {
                     'spec': {
                         'nodeClassRef': {
-                            'apiVersion': 'karpenter.k8s.aws/v1',
+                            'group': 'karpenter.k8s.aws',
                             'kind': 'EC2NodeClass',
                             'name': node_class['name'],
                         },
