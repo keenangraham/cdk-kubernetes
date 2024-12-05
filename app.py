@@ -461,7 +461,7 @@ class ClusterPermissions(Construct):
                 ]
             )
 
-class KubeArangoDB(Construct):
+class ArangoDB(Construct):
 
     def __init__(
         self,
@@ -474,7 +474,7 @@ class KubeArangoDB(Construct):
         super().__init__(scope, construct_id, **kwargs)
 
         chart = cluster.add_helm_chart(
-            'KubeArangoDB',
+            'ArangoDB',
             chart='kube-arangodb',
             repository='https://arangodb.github.io/kube-arangodb',
             version='1.2.43',
@@ -802,9 +802,9 @@ class KubernetesStack(Stack):
             cluster=cluster,
         )
 
-        kube_arangodb = KubeArangoDB(
+        arangodb = ArangoDB(
             self,
-            'KubeArangoDB',
+            'ArangoDB',
             cluster=cluster,
         )
 
