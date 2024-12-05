@@ -524,7 +524,7 @@ class ClusterAutoscaler(Construct):
                 'amiFamily': 'AL2023',
                 'amiSelectorTerms': [
                     {
-                        'alias': 'al2023@v20240807'
+                        'alias': 'al2023@v20241121'
                     },
                 ],
             }
