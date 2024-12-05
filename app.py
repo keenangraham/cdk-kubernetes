@@ -506,7 +506,6 @@ class ClusterAutoscaler(Construct):
         node_class = karpenter.add_ec2_node_class(
             'nodeclass',
             {
-                'amiFamily': 'AL2',
                 'subnetSelectorTerms': [
                     {
                         'tags': {
@@ -521,7 +520,12 @@ class ClusterAutoscaler(Construct):
                         },
                     },
                 ],
-                'role': karpenter.node_role.role_name
+                'role': karpenter.node_role.role_name,
+                'amiSelectorTerms': [
+                    {
+                        'alias': 'al2023@v20240807'
+                    },
+                ],
             }
         )
 
@@ -777,7 +781,7 @@ class KubernetesStack(Stack):
 
 KubernetesStack(
     app,
-    'KubernetesStack311',
+    'KubernetesStack31',
     env=US_WEST_2,
 )
 
