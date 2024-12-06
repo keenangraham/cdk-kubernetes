@@ -4,6 +4,24 @@ metadata:
   name: "sac"
 spec:
   mode: Cluster
+  agents:
+    volumeClaimTemplate:
+      spec:
+        storageClassName: gp2
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 5Gi
+  dbservers:
+    volumeClaimTemplate:
+      spec:
+        storageClassName: gp2
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 10Gi
+  coordinators:
+    count: 3
   tls:
     caSecretName: None
   externalAccess:
@@ -22,7 +40,7 @@ metadata:
     alb.ingress.kubernetes.io/healthcheck-path: '/_admin/server/availability'
     alb.ingress.kubernetes.io/healthcheck-interval-seconds: '90'
   name: sac-ingress
-  namespace: default
+  namespace: arangodb
 spec:
   ingressClassName: alb
   rules:
