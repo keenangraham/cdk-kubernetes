@@ -478,7 +478,7 @@ class ArangoDB(Construct):
             chart='kube-arangodb',
             repository='https://arangodb.github.io/kube-arangodb',
             version='1.2.43',
-            namespace='kube-system',
+            namespace='arangodb',
             values={
                 'operator.features.storage': 'true',
             },
@@ -714,8 +714,8 @@ class KubernetesStack(Stack):
         cluster.add_nodegroup_capacity(
             'more-nodes',
             min_size=0,
-            max_size=1,
-            desired_size=0,
+            max_size=2,
+            desired_size=2,
             disk_size=10,
             capacity_type=CapacityType.SPOT,
             instance_types=[
