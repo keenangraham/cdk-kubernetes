@@ -7,7 +7,7 @@ spec:
   agents:
     volumeClaimTemplate:
       spec:
-        storageClassName: gp2
+        storageClassName: gp3
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
@@ -15,7 +15,7 @@ spec:
   dbservers:
     volumeClaimTemplate:
       spec:
-        storageClassName: gp2
+        storageClassName: gp3
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
@@ -40,7 +40,6 @@ metadata:
     alb.ingress.kubernetes.io/healthcheck-path: '/_admin/server/availability'
     alb.ingress.kubernetes.io/healthcheck-interval-seconds: '90'
   name: sac-ingress
-  namespace: arangodb
 spec:
   ingressClassName: alb
   rules:

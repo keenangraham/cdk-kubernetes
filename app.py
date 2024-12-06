@@ -77,7 +77,16 @@ class EBSDriver(Construct):
                     'serviceAccount': {
                         'create': False
                     }
-                }
+                },
+                'storageClasses': [
+                    {
+                        'name': 'gp3',
+                        'parameters': {
+                            'type': 'gp3'
+                        },
+                        'allowVolumeExpansion': True,
+                    }
+                ],
             }
         )
 
@@ -478,10 +487,14 @@ class ArangoDB(Construct):
             chart='kube-arangodb',
             repository='https://arangodb.github.io/kube-arangodb',
             version='1.2.43',
-            namespace='arangodb',
             values={
-                'operator.features.storage': 'true',
-            },
+                'operator': {
+                    'features': {
+                        'storage': True,
+                        'backup': True,
+                    }
+                }
+            }
         )
 
 
@@ -579,6 +592,12 @@ class ClusterAutoscaler(Construct):
                                 'operator': 'Gt',
                                 'values': ['5']
                             },
+                        ],
+                        'startupTaints': [
+                            {
+                                'key': 'ebs.csi.aws.com/agent-not-ready',
+                                'effect': 'NoExecute',
+                            }
                         ]
                     }
                 },
