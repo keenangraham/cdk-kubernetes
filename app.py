@@ -77,7 +77,19 @@ class EBSDriver(Construct):
                     'serviceAccount': {
                         'create': False
                     }
-                }
+                },
+                'storageClasses': [
+                    {
+                        'name': 'gp3',
+                        'parameters': {
+                            'type': 'gp3'
+                        },
+                        'allowVolumeExpansion': True,
+                        'annotations': {
+                            'storageclass.kubernetes.io/is-default-class': 'true'
+                        }
+                    }
+                ],
             }
         )
 
@@ -461,6 +473,33 @@ class ClusterPermissions(Construct):
                 ]
             )
 
+class ArangoDB(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        chart = cluster.add_helm_chart(
+            'ArangoDB',
+            chart='kube-arangodb',
+            repository='https://arangodb.github.io/kube-arangodb',
+            version='1.2.43',
+            values={
+                'operator': {
+                    'features': {
+                        'storage': True,
+                        'backup': True,
+                    }
+                }
+            }
+        )
+
 
 class MetricsServer(Construct):
 
@@ -556,6 +595,12 @@ class ClusterAutoscaler(Construct):
                                 'operator': 'Gt',
                                 'values': ['5']
                             },
+                        ],
+                        'startupTaints': [
+                            {
+                                'key': 'ebs.csi.aws.com/agent-not-ready',
+                                'effect': 'NoExecute',
+                            }
                         ]
                     }
                 },
@@ -679,7 +724,7 @@ class KubernetesStack(Stack):
                 version=AlbControllerVersion.V2_8_2,
             ),
             masters_role=kubernetes_admin_role,
-            default_capacity=1,
+            default_capacity=2,
         )
 
         cluster_permissions = ClusterPermissions(
@@ -766,7 +811,7 @@ class KubernetesStack(Stack):
             self,
             'ArgoCD',
             cluster=cluster,
-            external_url='nargocd.api.encodedcc.org',
+            external_url='argocd.api.encodedcc.org',
         )
 
         argocd.manifest.node.add_dependency(
@@ -776,6 +821,12 @@ class KubernetesStack(Stack):
         cluster_autoscaler = ClusterAutoscaler(
             self,
             'ClusterAutoscaler',
+            cluster=cluster,
+        )
+
+        arangodb = ArangoDB(
+            self,
+            'ArangoDB',
             cluster=cluster,
         )
 
