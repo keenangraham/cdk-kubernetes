@@ -724,7 +724,7 @@ class KubernetesStack(Stack):
                 version=AlbControllerVersion.V2_8_2,
             ),
             masters_role=kubernetes_admin_role,
-            default_capacity=1,
+            default_capacity=2,
         )
 
         cluster_permissions = ClusterPermissions(
