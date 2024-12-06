@@ -85,6 +85,9 @@ class EBSDriver(Construct):
                             'type': 'gp3'
                         },
                         'allowVolumeExpansion': True,
+                        'annotations': {
+                            'storageclass.kubernetes.io/is-default-class': 'true'
+                        }
                     }
                 ],
             }
@@ -808,7 +811,7 @@ class KubernetesStack(Stack):
             self,
             'ArgoCD',
             cluster=cluster,
-            external_url='nargocd.api.encodedcc.org',
+            external_url='argocd.api.encodedcc.org',
         )
 
         argocd.manifest.node.add_dependency(
