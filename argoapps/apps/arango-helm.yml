@@ -18,3 +18,4 @@ spec:
             backup: true
   destination:
     server: 'https://kubernetes.default.svc'
+    namespace: default
