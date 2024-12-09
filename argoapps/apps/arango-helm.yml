@@ -6,11 +6,11 @@ metadata:
 spec:
   project: default
   source:
-    chart: kube-arango
+    chart: kube-arangodb
     repoURL: https://arangodb.github.io/kube-arangodb
     targetRevision: 1.2.43
     helm:
-      releaseName: kube-arango
+      releaseName: kube-arangodb
       valuesObject:
         operator:
           features:
