@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: arango-operator
+  namespace: argocd
+spec:
+  project: default
+  source:
+    chart: kube-arango
+    repoURL: https://arangodb.github.io/kube-arangodb
+    targetRevision: 1.2.43
+    helm:
+      releaseName: kube-arango
+      valuesObject:
+        operator:
+          features:
+            storage: true
+            backup: true
+  destination:
+    server: 'https://kubernetes.default.svc'

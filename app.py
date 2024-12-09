@@ -824,11 +824,11 @@ class KubernetesStack(Stack):
             cluster=cluster,
         )
 
-        arangodb = ArangoDB(
-            self,
-            'ArangoDB',
-            cluster=cluster,
-        )
+#        arangodb = ArangoDB(
+#            self,
+#            'ArangoDB',
+#            cluster=cluster,
+#        )
 
 
 KubernetesStack(
