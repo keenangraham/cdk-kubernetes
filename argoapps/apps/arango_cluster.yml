@@ -1,13 +1,13 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: app1
+  name: arango-cluster
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/keenangraham/cdk-kubernetes
-    path: argoapps/apps/app1
+    path: argoapps/apps/arango
     targetRevision: HEAD
   destination:
     server: https://kubernetes.default.svc

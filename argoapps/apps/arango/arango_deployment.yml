@@ -1,0 +1,28 @@
+apiVersion: "database.arangodb.com/v1"
+kind: "ArangoDeployment"
+metadata:
+  name: "sac"
+spec:
+  mode: Cluster
+  agents:
+    volumeClaimTemplate:
+      spec:
+        storageClassName: gp3
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 5Gi
+  dbservers:
+    volumeClaimTemplate:
+      spec:
+        storageClassName: gp3
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 10Gi
+  coordinators:
+    count: 3
+  tls:
+    caSecretName: None
+  externalAccess:
+    type: NodePort

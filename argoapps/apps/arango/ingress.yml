@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/scheme: 'internet-facing'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/target-type: 'ip'
+    alb.ingress.kubernetes.io/healthcheck-path: '/_admin/server/availability'
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '90'
+  name: sac-ingress
+spec:
+  ingressClassName: alb
+  rules:
+    - host: 'arango.api.encodedcc.org'
+      http:
+        paths:
+          - path: '/'
+            backend:
+              service:
+                name: sac-ea
+                port:
+                  number: 8529
+            pathType: Prefix
