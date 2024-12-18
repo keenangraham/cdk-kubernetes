@@ -496,6 +496,12 @@ class ArangoDB(Construct):
                         'storage': True,
                         'backup': True,
                     }
+
+                },
+                'rbac': {
+                    'extensions': {
+                        'debug': True,
+                    }
                 }
             }
         )
@@ -605,7 +611,7 @@ class ClusterAutoscaler(Construct):
                     }
                 },
                 'limits': {
-                    'cpu': '10',
+                    'cpu': '16',
                     'memory': '50Gi',
                     'nvidia.com/gpu': '2',
                 },

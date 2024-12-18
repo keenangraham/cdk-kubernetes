@@ -11,7 +11,7 @@ spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 5Gi
+            storage: 50Gi
   dbservers:
     volumeClaimTemplate:
       spec:
@@ -19,9 +19,24 @@ spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 10Gi
-  coordinators:
+            storage: 100Gi
     count: 3
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 2Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+  coordinators:
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 512Mi
+    count: 6
   tls:
     caSecretName: None
   externalAccess:
