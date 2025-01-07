@@ -184,6 +184,50 @@ class S3Driver(Construct):
 
         chart.node.add_dependency(service_account)
 
+class SecretsStoreDriver(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        service_account = cluster.add_service_account(
+            'SecretsStoreCSIDriverServiceAccount',
+            name='secrets-store-csi-driver-sa',
+            namespace='kube-system',
+        )
+
+        secrets_store_csi_driver_policy = PolicyStatement(
+            effect=Effect.ALLOW,
+            actions=[
+                'secretsmanager:GetSecretValue',
+                'secretsmanager:DescribeSecret',
+            ],
+            resources=[
+                '*'
+            ]
+        )
+
+        service_account.add_to_principal_policy(secrets_store_csi_driver_policy)
+
+        chart = cluster.add_helm_chart(
+            'SecretsStoreCSIDriver',
+            chart='secrets-store-csi-driver-provider-aws',
+            repository='https://aws.github.io/secrets-store-csi-driver-provider-aws',
+            namespace='kube-system',
+            version='0.3.10',
+        )
+
+        chart.node.add_dependency(service_account)
+
+        
+
+        
 
 class ExternalDns(Construct):
 
@@ -780,6 +824,12 @@ class KubernetesStack(Stack):
         s3_driver = S3Driver(
             self,
             'S3Driver',
+            cluster=cluster,
+        )
+
+        secrets_store_driver = SecretsStoreDriver(
+            self,
+            'SecretsStoreDriver',
             cluster=cluster,
         )
 
