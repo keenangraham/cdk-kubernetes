@@ -196,7 +196,6 @@ class SecretsStoreDriver(Construct):
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        service_account.add_to_principal_policy(secrets_store_csi_driver_policy)
 
         chart = cluster.add_helm_chart(
             'SecretsStoreCSIDriver',
