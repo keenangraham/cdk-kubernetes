@@ -199,7 +199,7 @@ class SecretsStoreDriver(Construct):
         self.chart = cluster.add_helm_chart(
             'SecretsStoreDriver',
             chart='secrets-store-csi-driver',
-            repository='https://kubernetes-sigs.github.io/secrets-store-csi-driver',
+            repository='https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts',
             namespace='kube-system',
             version='1.4.7',
         )
