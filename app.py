@@ -196,6 +196,26 @@ class SecretsStoreDriver(Construct):
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
+        self.chart = cluster.add_helm_chart(
+            'SecretsStoreDriver',
+            chart='secrets-store-csi-driver',
+            repository='https://kubernetes-sigs.github.io/secrets-store-csi-driver',
+            namespace='kube-system',
+            version='1.4.7',
+        )
+
+class SecretsStoreDriverProviderAws(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
 
         chart = cluster.add_helm_chart(
             'SecretsStoreCSIDriver',
@@ -810,6 +830,12 @@ class KubernetesStack(Stack):
         secrets_store_driver = SecretsStoreDriver(
             self,
             'SecretsStoreDriver',
+            cluster=cluster,
+        )
+
+        secrets_store_driver_provider_aws = SecretsStoreDriverProviderAws(
+            self,
+            'SecretsStoreDriverProviderAws',
             cluster=cluster,
         )
 
