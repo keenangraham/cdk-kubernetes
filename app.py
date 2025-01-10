@@ -184,6 +184,50 @@ class S3Driver(Construct):
 
         chart.node.add_dependency(service_account)
 
+class SecretsStoreDriver(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        self.chart = cluster.add_helm_chart(
+            'SecretsStoreDriver',
+            chart='secrets-store-csi-driver',
+            repository='https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts',
+            namespace='kube-system',
+            version='1.4.7',
+        )
+
+class SecretsStoreDriverProviderAws(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+
+        chart = cluster.add_helm_chart(
+            'SecretsStoreCSIDriver',
+            chart='secrets-store-csi-driver-provider-aws',
+            repository='https://aws.github.io/secrets-store-csi-driver-provider-aws',
+            namespace='kube-system',
+            version='0.3.10',
+        )
+
+        
+
+        
 
 class ExternalDns(Construct):
 
@@ -303,6 +347,50 @@ class TestApp(Construct):
         )
 
         manifest.node.add_dependency(cluster.alb_controller)
+
+class TestSecretsStoreServiceAccount(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        namespace_manifest = cluster.add_manifest(
+            'test-secrets-store-ns',
+            {
+                'apiVersion': 'v1',
+                'kind': 'Namespace',
+                'metadata': {
+                    'name': 'test-secrets-store',
+                }
+            }
+        )
+
+        service_account = cluster.add_service_account(
+            'TestSecretsStoreServiceAccount',
+            name='test-secrets-store-sa',
+            namespace='test-secrets-store',
+        )
+
+        service_account.node.add_dependency(namespace_manifest)
+
+        service_account.add_to_principal_policy(
+            PolicyStatement(
+                effect=Effect.ALLOW,
+                actions=[
+                    'secretsmanager:GetSecretValue',
+                    'secretsmanager:DescribeSecret',
+                ],
+                resources=[
+                    'arn:aws:secretsmanager:us-west-2:618537831167:secret:eks-test-secret-GNClRF',
+                ],
+            )
+        )
 
 
 class PythonApp(Construct):
@@ -783,6 +871,18 @@ class KubernetesStack(Stack):
             cluster=cluster,
         )
 
+        secrets_store_driver = SecretsStoreDriver(
+            self,
+            'SecretsStoreDriver',
+            cluster=cluster,
+        )
+
+        secrets_store_driver_provider_aws = SecretsStoreDriverProviderAws(
+            self,
+            'SecretsStoreDriverProviderAws',
+            cluster=cluster,
+        )
+
         cloudwatch_observability = CloudWatchObservability(
             self,
             'CloudwatchObservability',
@@ -836,6 +936,11 @@ class KubernetesStack(Stack):
             cluster=cluster,
         )
 
+        test_secrets_store_service_account = TestSecretsStoreServiceAccount(
+            self,
+            'TestSecretsStoreServiceAccount',
+            cluster=cluster,
+        )
 
 KubernetesStack(
     app,
