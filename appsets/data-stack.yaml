@@ -9,7 +9,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/keenangraham/cdk-kubernetes.git
-        revision: HEAD
+        revision: argoapps
         files:
           - path: "apps/data-stack/*/dev/config.json"
   template:
@@ -29,10 +29,11 @@ spec:
           ref: values
       destination:
         server: https://kubernetes.default.svc
-        namespace: '{{data-stack}}-{{.env}}'
+        namespace: 'data-stack-{{.env}}'
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
+          - ServerSideApply=true
