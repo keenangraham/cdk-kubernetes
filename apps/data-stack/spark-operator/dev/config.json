@@ -4,5 +4,5 @@
     "repoURL": "https://kubeflow.github.io/spark-operator",
     "targetRevision": 2.1.0,
     "valuesRepoURL": "https://github.com/keenangraham/cdk-kubernetes",
-    "valuesFile": "apps/data/spark-operator/values.yaml"
+    "valuesFile": "apps/data-stack/spark-operator/values.yaml"
 }
