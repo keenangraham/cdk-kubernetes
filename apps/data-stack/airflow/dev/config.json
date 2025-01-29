@@ -5,5 +5,5 @@
     "targetRevision": 1.15.0,
     "valuesRepoURL": "https://github.com/keenangraham/cdk-kubernetes",
     "valuesFile": "apps/data-stack/airflow/values.yaml",
-    "additionalResources": "apps/data-stack/airflow/additional_resources/env/dev"
+    "additionalResources": "apps/data-stack/airflow/additional_resources/dev"
 }

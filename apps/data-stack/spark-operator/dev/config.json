@@ -5,5 +5,5 @@
     "targetRevision": 2.1.0,
     "valuesRepoURL": "https://github.com/keenangraham/cdk-kubernetes",
     "valuesFile": "apps/data-stack/spark-operator/values.yaml",
-    "additionalResources": "apps/data-stack/spark-operator/additional_resources/env/dev/"
+    "additionalResources": "apps/data-stack/spark-operator/additional_resources/dev/"
 }
