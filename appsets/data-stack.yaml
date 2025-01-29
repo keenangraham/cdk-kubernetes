@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: data-stack
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/keenangraham/cdk-kubernetes.git
+        revision: argoapps
+        files:
+          - path: "apps/data-stack/*/dev/config.json"
+  template:
+    metadata:
+      name: '{{.chart}}-{{.env}}'
+    spec:
+      project: default
+      sources:
+        - repoURL: '{{.repoURL}}'
+          targetRevision: '{{.targetRevision}}'
+          chart: '{{.chart}}'
+          helm:
+            valueFiles:
+              - '$values/{{.valuesFile}}'
+        - repoURL: '{{.valuesRepoURL}}'
+          targetRevision: argoapps
+          ref: values
+        - repoURL: '{{.valuesRepoURL}}'
+          path: '{{.additionalResources}}'
+          targetRevision: argoapps
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'data-stack-{{.env}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
