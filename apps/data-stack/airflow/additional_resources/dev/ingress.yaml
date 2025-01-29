@@ -10,5 +10,5 @@ spec:
       - backend:
           service:
             name: airflow-dev-webserver
-          path: /
-          pathType: Prefix
+      path: /
+      pathType: Prefix
