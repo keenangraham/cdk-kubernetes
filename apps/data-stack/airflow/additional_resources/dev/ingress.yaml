@@ -1,0 +1,12 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: airflow-ui
+spec:
+  rules:
+  - host: airflow.api.encodedcc.org
+    http:
+      paths:
+      - backend:
+          service:
+            name: airflow-dev-webserver

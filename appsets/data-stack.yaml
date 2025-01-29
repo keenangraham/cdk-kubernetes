@@ -27,6 +27,9 @@ spec:
         - repoURL: '{{.valuesRepoURL}}'
           targetRevision: argoapps
           ref: values
+        - repoURL: '{{.valuesRepoURL}}'
+          path: '{{.additionalResources}}'
+          targetRevision: argoapps
       destination:
         server: https://kubernetes.default.svc
         namespace: 'data-stack-{{.env}}'
