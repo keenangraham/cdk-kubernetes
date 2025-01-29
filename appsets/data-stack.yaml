@@ -27,7 +27,7 @@ spec:
         - repoURL: '{{.valuesRepoURL}}'
           targetRevision: argoapps
           ref: values
-        - repoURL: '$values'
+        - repoURL: '{{.valuesRepoURL}}'
           path: '{{.additionalResources}}'
           targetRevision: argoapps
       destination:
