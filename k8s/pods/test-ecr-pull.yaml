@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - name: cypress
+    image: public.ecr.aws/cherry-lab/cherry-lab:cypress-9.4.1-m1
+    ports:
+    - containerPort: 80
