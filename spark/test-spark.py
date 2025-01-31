@@ -9,7 +9,7 @@ def main():
         .getOrCreate()
 
     data = [
-        Row(name="Chalice", age=30),
+        Row(name="Klalice", age=30),
         Row(name="Bob", age=25),
         Row(name="Charlie", age=35),
         Row(name="David", age=40)
@@ -22,10 +22,10 @@ def main():
     row_count = df.count()
 
     print(f"Number of rows in the DataFrame: {row_count}")
-    df = spark.read.text("s3a://encode-build-log/2017-03-25-03-17*")
+    df = spark.read.text("s3a://encode-imputation-logs/")
 #    df = spark.read.text("s3a://igvf-files-dev-logs/")
 #    df.persist()
-    df.count()
+    print('Number of logs', df.count())
 
 
 if __name__ == "__main__":
