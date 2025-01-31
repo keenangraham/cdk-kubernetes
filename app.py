@@ -802,6 +802,66 @@ class SparkBucketReadServiceAccount(Construct):
 
         service_account.role.add_managed_policy(spark_bucket_read_policy)
 
+        service_account.add_to_principal_policy(
+            PolicyStatement(
+                effect=Effect.ALLOW,
+                actions=[
+                    "s3:ListBucket",
+                    "s3:GetObject",
+                    "s3:GetObjectAttributes",
+                    "s3:GetObjectVersion",
+                    "s3:GetBucketLocation",
+                ],
+                resources=[
+                    "arn:aws:s3:::igvf-files-dev-logs",
+                    "arn:aws:s3:::igvf-files-dev-logs/*",
+                ],
+            )
+        )
+
+        cluster.add_manifest(
+            'spark-bucket-read-role',
+            {
+                "apiVersion": "rbac.authorization.k8s.io/v1",
+                "kind": "Role",
+                "metadata": {
+                    "name": "spark-bucket-read-role",
+                    "namespace": "default"
+                },
+                "rules": [
+                    {
+                        "apiGroups": [""],
+                        "resources": ["pods", "configmaps", "persistentvolumeclaims", "services"],
+                        "verbs": ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
+                    }
+                ]
+            }
+        )
+
+        cluster.add_manifest(
+            'spark-bucket-read-rolebinding',
+            {
+                "apiVersion": "rbac.authorization.k8s.io/v1",
+                "kind": "RoleBinding",
+                "metadata": {
+                    "name": "spark-bucket-read-rolebinding",
+                    "namespace": "default"
+                },
+                "roleRef": {
+                    "apiGroup": "rbac.authorization.k8s.io",
+                    "kind": "Role",
+                    "name": "spark-bucket-read-role"
+                },
+                "subjects": [
+                    {
+                        "kind": "ServiceAccount",
+                        "name": "spark-bucket-read-sa",
+                        "namespace": "default"
+                    }
+                ]
+            }
+        )
+
 
 class KubernetesStack(Stack):
 
