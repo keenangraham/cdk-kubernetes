@@ -783,6 +783,24 @@ class ArgoCD(Construct):
         self.manifest.node.add_dependency(cluster.alb_controller)
 
 
+class SparkBucketReadServiceAccount(Stack):
+
+    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        service_account = cluster.add_service_account(
+            'SparkBucketReadServiceAccount',
+            name='spark-bucket-read-sa',
+            namespace='default',
+        )
+
+        spark_bucket_read_policy = ManagedPolicy.from_managed_policy_arn(
+            self,
+            'SparkBucketReadPolicy',
+            managed_policy_arn='arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess',
+        )
+
+        service_account.role.add_managed_policy(spark_bucket_read_policy)
 
 
 class KubernetesStack(Stack):
@@ -940,6 +958,12 @@ class KubernetesStack(Stack):
         test_secrets_store_service_account = TestSecretsStoreServiceAccount(
             self,
             'TestSecretsStoreServiceAccount',
+            cluster=cluster,
+        )
+
+        spark_bucket_read_service_account = SparkBucketReadServiceAccount(
+            self,
+            'SparkBucketReadServiceAccount',
             cluster=cluster,
         )
 
