@@ -783,7 +783,7 @@ class ArgoCD(Construct):
         self.manifest.node.add_dependency(cluster.alb_controller)
 
 
-class SparkBucketReadServiceAccount(Stack):
+class SparkBucketReadServiceAccount(Construct):
 
     def __init__(self, scope: Construct, construct_id: str, *, cluster: Cluster, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
