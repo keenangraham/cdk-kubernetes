@@ -22,8 +22,8 @@ def main():
     row_count = df.count()
 
     print(f"Number of rows in the DataFrame: {row_count}")
-
-    df = spark.read.text("s3a://igvf-files-dev-logs/")
+    df = spark.read.text("s3a://encode-build-log/2017-03-25*")
+#    df = spark.read.text("s3a://igvf-files-dev-logs/")
 #    df.persist()
     df.count()
 
