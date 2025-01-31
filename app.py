@@ -967,7 +967,7 @@ class KubernetesStack(Stack):
             cluster=cluster,
         )
 
-f
+
 KubernetesStack(
     app,
     'KubernetesStack',
