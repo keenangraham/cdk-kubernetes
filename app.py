@@ -205,6 +205,7 @@ class SecretsStoreDriver(Construct):
             version='1.4.7',
         )
 
+
 class SecretsStoreDriverProviderAws(Construct):
 
     def __init__(
