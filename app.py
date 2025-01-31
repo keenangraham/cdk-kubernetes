@@ -184,6 +184,7 @@ class S3Driver(Construct):
 
         chart.node.add_dependency(service_account)
 
+
 class SecretsStoreDriver(Construct):
 
     def __init__(
@@ -225,9 +226,6 @@ class SecretsStoreDriverProviderAws(Construct):
             version='0.3.10',
         )
 
-        
-
-        
 
 class ExternalDns(Construct):
 
@@ -347,6 +345,7 @@ class TestApp(Construct):
         )
 
         manifest.node.add_dependency(cluster.alb_controller)
+
 
 class TestSecretsStoreServiceAccount(Construct):
 
@@ -560,6 +559,7 @@ class ClusterPermissions(Construct):
                     'read-only-admin',
                 ]
             )
+
 
 class ArangoDB(Construct):
 
@@ -941,6 +941,7 @@ class KubernetesStack(Stack):
             'TestSecretsStoreServiceAccount',
             cluster=cluster,
         )
+
 
 KubernetesStack(
     app,
