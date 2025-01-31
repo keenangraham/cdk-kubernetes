@@ -1,12 +1,12 @@
 from pyspark.sql import SparkSession
 from pyspark.sql import Row
+from pyspark.sql.functions import col, regexp_extract
 
 
 def main():
     spark = SparkSession.builder \
-        .appName("TestSpark") \
+        .appName("S3 Log Reader") \
         .getOrCreate()
-
 
     data = [
         Row(name="Alice", age=30),
@@ -23,7 +23,10 @@ def main():
 
     print(f"Number of rows in the DataFrame: {row_count}")
 
-    spark.stop()
+    df = spark.read.text("s3a://igvf-files-dev-logs/")
+#    df.persist()
+    df.count()
+
 
 if __name__ == "__main__":
     main()
