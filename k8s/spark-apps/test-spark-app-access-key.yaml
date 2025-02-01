@@ -1,0 +1,76 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: test-spark
+  namespace: default
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: spark:3.5.3
+  imagePullPolicy: IfNotPresent
+  mainApplicationFile: https://raw.githubusercontent.com/keenangraham/cdk-kubernetes/refs/heads/main/spark/test-spark.py
+  sparkVersion: 3.5.3
+  driver:
+    coreRequest: "1000m"
+    memory: "2048M"
+    serviceAccount: spark-bucket-read-sa
+    env:
+      - name: IVY_CACHE_DIR
+        value: /tmp/.ivy2
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws-spark-access-key
+            key: ACCESS_KEY
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws-spark-secret-access-key
+            key: SECRET_ACCESS_KEY
+    volumeMounts:
+      - name: ivy-cache
+        mountPath: /tmp/.ivy2
+      - name: aws-creds
+        mountPath: /tmp/.aws-creds
+  executor:
+    instances: 1
+    coreRequest: "100m"
+    memory: "512M"
+    serviceAccount: spark-bucket-read-sa
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws-spark-access-key
+            key: ACCESS_KEY
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws-spark-secret-access-key
+            key: SECRET_ACCESS_KEY
+    volumeMounts:
+      - name: aws-creds
+        mountPath: /tmp/.aws-creds
+  dynamicAllocation:
+    enabled: true
+    initialExecutors: 1
+    maxExecutors: 10
+    minExecutors: 1
+  volumes:
+    - name: ivy-cache
+      emptyDir: {}
+    - name: aws-creds
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: "spark-aws-secrets"
+  sparkConf:
+    "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.auth.EnvironmentVariableCredentialsProvider"
+    "spark.jars.packages": "org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.11.1026"
+    "spark.jars.ivy": "/tmp/.ivy2"
+    "log4j.logger.org.apache.hadoop.fs.s3a": "DEBUG"
+    "log4j.logger.com.amazonaws": "DEBUG"
+    "log4j.logger.com.amazonaws.internal": "INFO"
