@@ -203,6 +203,11 @@ class SecretsStoreDriver(Construct):
             repository='https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts',
             namespace='kube-system',
             version='1.4.7',
+            values={
+                "syncSecret": {
+                    "enabled": "true"
+                }
+            }
         )
 
 
@@ -783,6 +788,16 @@ class ArgoCD(Construct):
         self.manifest.node.add_dependency(cluster.alb_controller)
 
 
+spark_aws_secret_objects = """- objectName: "test/spark/read-cross-acccount-bucket"
+  objecttype: "secretsmanager"
+  jmesPath:
+    - path: "ACCESS_KEY"
+      objectAlias: "ACCESS_KEY"
+    - path: "SECRET_ACCESS_KEY"
+      objectAlias: "SECRET_ACCESS_KEY"
+"""
+
+
 class SparkBucketReadServiceAccount(Construct):
 
     def __init__(self, scope: Construct, construct_id: str, *, cluster: Cluster, **kwargs) -> None:
@@ -806,17 +821,53 @@ class SparkBucketReadServiceAccount(Construct):
             PolicyStatement(
                 effect=Effect.ALLOW,
                 actions=[
-                    "s3:ListBucket",
-                    "s3:GetObject",
-                    "s3:GetObjectAttributes",
-                    "s3:GetObjectVersion",
-                    "s3:GetBucketLocation",
+                    'secretsmanager:GetSecretValue',
+                    'secretsmanager:DescribeSecret',
                 ],
                 resources=[
-                    "arn:aws:s3:::igvf-files-dev-logs",
-                    "arn:aws:s3:::igvf-files-dev-logs/*",
+                    'arn:aws:secretsmanager:us-west-2:618537831167:secret:test/spark/read-cross-acccount-bucket-TBr0Gs'
                 ],
             )
+        )
+
+        cluster.add_manifest(
+            'spark-aws-secrets-provider',
+            {
+                "apiVersion": "secrets-store.csi.x-k8s.io/v1",
+                "kind": "SecretProviderClass",
+                "metadata": {
+                    "name": "spark-aws-secrets",
+                    "namespace": "default"
+                },
+                "spec": {
+                    "provider": "aws",
+                    "parameters": {
+                        "objects": spark_aws_secret_objects
+                    },
+                    "secretObjects": [
+                        {
+                            "secretName": "aws-spark-access-key",
+                            "data": [
+                                {
+                                    "objectName": "ACCESS_KEY",
+                                    "key": "ACCESS_KEY"
+                                }
+                            ],
+                            "type": "Opaque"
+                        },
+                        {
+                            "secretName": "aws-spark-secret-access-key",
+                            "data": [
+                                {
+                                    "objectName": "SECRET_ACCESS_KEY",
+                                    "key": "SECRET_ACCESS_KEY"
+                                }
+                            ],
+                            "type": "Opaque"
+                        }
+                    ],
+                }
+            }
         )
 
         cluster.add_manifest(
