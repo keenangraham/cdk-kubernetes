@@ -8,7 +8,7 @@ from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKu
 default_args = {
     'owner': 'me',
     'depends_on_past': False,
-    'start_date': datetime(2025, 2, 9),
+    'start_date': datetime(2025, 2, 4),
     'retries': 1,
     'schedule': None,
     'retry_delay': timedelta(minutes=5),
@@ -134,6 +134,7 @@ with DAG(
     schedule_interval=timedelta(days=1),
     catchup=False,
 ) as dag:
+
 
     spark_task = SparkKubernetesOperator(
         task_id='spark_task',
