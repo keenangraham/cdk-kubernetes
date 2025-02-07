@@ -1,7 +1,7 @@
 import datetime
 
-from airflow.models.dag import DAG
-from airflow.providers.standard.operators.bash import BashOperator
+from airflow.models import DAG
+from airflow.operators.bash import BashOperator
 
 from airflow.utils.dates import days_ago
 
