@@ -31,6 +31,7 @@ spark_app = {
     "mainApplicationFile": "https://raw.githubusercontent.com/keenangraham/cdk-kubernetes/refs/heads/main/spark/test-spark.py",
     "sparkVersion": "3.5.3",
     "driver": {
+      "labels":[],
       "coreRequest": "1000m",
       "memory": "2048M",
       "serviceAccount": "spark-bucket-read-sa",
