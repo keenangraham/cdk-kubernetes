@@ -19,7 +19,6 @@ spark_app = {
   "kind": "SparkApplication",
   "metadata": {
     "name": "test-spark",
-    "namespace": "default"
   },
   "spec": {
     "type": "Python",
@@ -27,101 +26,23 @@ spark_app = {
     "mode": "cluster",
     "image": "public.ecr.aws/cherry-lab/cherry-lab:spark-3.5.4-s3",
     "imagePullPolicy": "IfNotPresent",
-    "mainApplicationFile": "https://raw.githubusercontent.com/keenangraham/cdk-kubernetes/refs/heads/main/spark/test-spark.py",
+    "mainApplicationFile": "https://raw.githubusercontent.com/keenangraham/cdk-kubernetes/refs/heads/main/spark/test-spark-simple.py",
     "sparkVersion": "3.5.3",
     "driver": {
       "coreRequest": "1000m",
-      "memory": "2048M",
-      "serviceAccount": "spark-bucket-read-sa",
-      "env": [
-        {
-          "name": "IVY_CACHE_DIR",
-          "value": "/tmp/.ivy2"
-        },
-        {
-          "name": "AWS_ACCESS_KEY_ID",
-          "valueFrom": {
-            "secretKeyRef": {
-              "name": "aws-spark-access-key",
-              "key": "ACCESS_KEY"
-            }
-          }
-        },
-        {
-          "name": "AWS_SECRET_ACCESS_KEY",
-          "valueFrom": {
-            "secretKeyRef": {
-              "name": "aws-spark-secret-access-key",
-              "key": "SECRET_ACCESS_KEY"
-            }
-          }
-        }
-      ],
-      "volumeMounts": [
-        {
-          "name": "ivy-cache",
-          "mountPath": "/tmp/.ivy2"
-        },
-        {
-          "name": "aws-creds",
-          "mountPath": "/tmp/.aws-creds"
-        }
-      ]
+      "memory": "2048M"
     },
     "executor": {
       "instances": 1,
       "coreRequest": "100m",
-      "memory": "512M",
-      "serviceAccount": "spark-bucket-read-sa",
-      "env": [
-        {
-          "name": "AWS_ACCESS_KEY_ID",
-          "valueFrom": {
-            "secretKeyRef": {
-              "name": "aws-spark-access-key",
-              "key": "ACCESS_KEY"
-            }
-          }
-        },
-        {
-          "name": "AWS_SECRET_ACCESS_KEY",
-          "valueFrom": {
-            "secretKeyRef": {
-              "name": "aws-spark-secret-access-key",
-              "key": "SECRET_ACCESS_KEY"
-            }
-          }
-        }
-      ],
-      "volumeMounts": [
-        {
-          "name": "aws-creds",
-          "mountPath": "/tmp/.aws-creds"
-        }
-      ]
+      "memory": "512M"
     },
     "dynamicAllocation": {
       "enabled": True,
       "initialExecutors": 1,
       "maxExecutors": 10,
       "minExecutors": 1
-    },
-    "volumes": [
-      {
-        "name": "ivy-cache",
-        "emptyDir": {}
-      },
-      {
-        "name": "aws-creds",
-        "csi": {
-          "driver": "secrets-store.csi.k8s.io",
-          "readOnly": True,
-          "volumeAttributes": {
-            "secretProviderClass": "spark-aws-secrets"
-          }
-        }
-      }
-    ]
+    }
   }
 }
 
@@ -136,6 +57,6 @@ with DAG(
 
     spark_task = SparkKubernetesOperator(
         task_id='spark_task',
-        namespace='default',
+        namespace='data-stack-dev',
         template_spec=spark_app
     )
