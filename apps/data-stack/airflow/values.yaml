@@ -2492,6 +2492,7 @@ config:
     statsd_prefix: airflow
     statsd_host: '{{ printf "%s-statsd" (include "airflow.fullname" .) }}'
   webserver:
+    expose_config: 'True'
     enable_proxy_fix: 'True'
     # For Airflow 1.10
     rbac: 'True'
