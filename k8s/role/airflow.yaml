@@ -1,0 +1,62 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airflow-spark-dev
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: airflow-dev-worker
+  namespace: data-stack-dev
+roleRef:
+  kind: Role
+  name: spark-bucket-read-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: airflow-spark-create-application
+  namespace: default
+rules:
+- apiGroups:
+  - "sparkoperator.k8s.io"
+  resources:
+  - sparkapplications
+  - sparkapplications/status
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - pods/log
+  - pods/status
+  - pods/var
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: airflow-spark-application-creator
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: airflow-spark-create-application
+subjects:
+- kind: ServiceAccount
+  name: airflow-dev-worker
+  namespace: data-stack-dev
