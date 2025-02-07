@@ -102,7 +102,7 @@ spark_app = {
       ]
     },
     "dynamicAllocation": {
-      "enabled": true,
+      "enabled": True,
       "initialExecutors": 1,
       "maxExecutors": 10,
       "minExecutors": 1
@@ -116,7 +116,7 @@ spark_app = {
         "name": "aws-creds",
         "csi": {
           "driver": "secrets-store.csi.k8s.io",
-          "readOnly": true,
+          "readOnly": True,
           "volumeAttributes": {
             "secretProviderClass": "spark-aws-secrets"
           }
