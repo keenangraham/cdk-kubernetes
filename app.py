@@ -1,3 +1,5 @@
+import json
+
 from aws_cdk import App
 from aws_cdk import Stack
 from aws_cdk import RemovalPolicy
@@ -31,7 +33,7 @@ from constructs import Construct
 
 from shared_infrastructure.cherry_lab.environments import US_WEST_2
 
-from aws_cdk.lambda_layer_kubectl_v31 import KubectlV31Layer
+from aws_cdk.lambda_layer_kubectl_v32 import KubectlV32Layer
 
 from cdk_eks_karpenter import Karpenter
 
@@ -514,6 +516,35 @@ class CloudWatchObservability(Construct):
         )
 
 
+class VpcCni(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        vpc_cni_cfn_addon = CfnAddon(
+            self,
+            'VpcCniCfnAddon',
+            addon_name='vpc-cni',
+            cluster_name=cluster.cluster_name,
+            addon_version='v1.19.2-eksbuild.1',
+            resolve_conflicts='OVERWRITE',
+            configuration_values=json.dumps(
+                {
+                    "env": {
+                        "ENABLE_PREFIX_DELEGATION": "true"
+                    }
+                }
+            )
+        )
+
+
 class ClusterPermissions(Construct):
 
     def __init__(
@@ -939,8 +970,8 @@ class KubernetesStack(Stack):
         cluster = Cluster(
             self,
             'Cluster',
-            version=KubernetesVersion.V1_31,
-            kubectl_layer=KubectlV31Layer(
+            version=KubernetesVersion.of(version='1.32'),
+            kubectl_layer=KubectlV32Layer(
                 self,
                 'kubectl',
             ),
@@ -1016,6 +1047,12 @@ class KubernetesStack(Stack):
         cloudwatch_observability = CloudWatchObservability(
             self,
             'CloudwatchObservability',
+            cluster=cluster
+        )
+
+        vpc_cni = VpcCni(
+            self,
+            'VpcCni',
             cluster=cluster
         )
 
