@@ -669,7 +669,7 @@ class ClusterAutoscaler(Construct):
             self,
             'Karpenter',
             cluster=cluster,
-            version='1.1.0',
+            version='1.2.1',
             namespace='kube-system',
         )
 
@@ -694,7 +694,7 @@ class ClusterAutoscaler(Construct):
                 'amiFamily': 'AL2023',
                 'amiSelectorTerms': [
                     {
-                        'alias': 'al2023@v20241121'
+                        'alias': 'al2023@v20250203'
                     },
                 ],
             }
