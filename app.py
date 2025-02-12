@@ -672,7 +672,6 @@ class ClusterAutoscaler(Construct):
             version='1.2.1',
             namespace='kube-system',
         )
-
         node_class = karpenter.add_ec2_node_class(
             'nodeclass',
             {
@@ -697,6 +696,9 @@ class ClusterAutoscaler(Construct):
                         'alias': 'al2023@v20250203'
                     },
                 ],
+                'kubelet': {
+                    'maxPods': 110
+                }
             }
         )
 
