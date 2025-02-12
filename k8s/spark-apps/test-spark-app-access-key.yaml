@@ -35,7 +35,7 @@ spec:
         mountPath: /tmp/.aws-creds
   executor:
     instances: 1
-    coreRequest: "100m"
+    coreRequest: "50m"
     memory: "512M"
     serviceAccount: spark-bucket-read-sa
     env:
