@@ -235,6 +235,100 @@ class SecretsStoreDriverProviderAws(Construct):
         )
 
 
+class ExternalSecretsOperator(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        namespace = 'external-secrets'
+
+        eso_namespace = cluster.add_manifest(
+            'ESONamespace',
+            {
+                'apiVersion': 'v1',
+                'kind': 'Namespace',
+                'metadata': {
+                    "name": namespace,
+                },
+            }
+        )
+
+        chart = cluster.add_helm_chart(
+            'ExternalSecretsOperator',
+            chart='external-secrets',
+            repository='https://charts.external-secrets.io',
+            namespace=namespace,
+            release='external-secrets',
+            version='0.14.2',
+        )
+
+        chart.node.add_dependency(eso_namespace)
+
+        password_generator = cluster.add_manifest(
+            'ESOPasswordGenerator',
+            {
+                'apiVersion': 'generators.external-secrets.io/v1alpha1',
+                'kind': 'ClusterGenerator',
+                'metadata': {
+                    'name': 'password-generator',
+                    'namespace': namespace
+                },
+                'spec': {
+                    'kind': 'Password',
+                    'generator': {
+                        'passwordSpec': {                            
+                            'length': 42,
+                            'digits': 20,
+                            'symbols': 0,
+                            'noUpper': False,
+                            'allowRepeat': True
+                        }
+                    }
+                }
+            }
+        )
+
+        password_generator.node.add_dependency(eso_namespace)
+
+        password_test = cluster.add_manifest(
+            'PasswordTest',
+            {
+                'apiVersion': 'external-secrets.io/v1beta1',
+                'kind': 'ExternalSecret',
+                'metadata': {
+                    'name': 'generated-secret',
+                    'namespace': namespace
+                },
+                'spec': {
+                    'refreshInterval': "0",
+                    'target': {
+                        'name': 'password-test'
+                    },
+                    'dataFrom': [
+                        {
+                            'sourceRef': {
+                                'generatorRef': {
+                                    'apiVersion': 'generators.external-secrets.io/v1alpha1',
+                                    'kind': 'ClusterGenerator',
+                                    'name': 'password-generator',
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        )
+
+        password_test.node.add_dependency(eso_namespace)
+
+
 class ExternalDns(Construct):
 
     def __init__(
@@ -967,6 +1061,43 @@ class SparkBucketReadServiceAccount(Construct):
 
         role_binding.node.add_dependency(namespace_manifest)
 
+        airflow_static_webserver_secret = cluster.add_manifest(
+            'AirflowStaticWebserverSecret',
+            {
+                'apiVersion': 'external-secrets.io/v1beta1',
+                'kind': 'ExternalSecret',
+                'metadata': {
+                    'name': 'airflow-static-webserver-secret-eso',
+                    'namespace': NAMESPACE
+                },
+                'spec': {
+                    'refreshInterval': "0",
+                    'target': {
+                        'name': 'airflow-static-webserver-secret-generated',
+                        'template': {
+                            'data': {
+                                'webserver-secret-key': '{{ .password }}'
+                            }
+                        }
+                    },
+                    'dataFrom': [
+                        {
+                            'sourceRef': {
+                                'generatorRef': {
+                                    'apiVersion': 'generators.external-secrets.io/v1alpha1',
+                                    'kind': 'ClusterGenerator',
+                                    'name': 'password-generator',
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        )
+
+        airflow_static_webserver_secret.node.add_dependency(namespace_manifest)
+
+
 
 class KubernetesStack(Stack):
 
@@ -1064,6 +1195,12 @@ class KubernetesStack(Stack):
         secrets_store_driver_provider_aws = SecretsStoreDriverProviderAws(
             self,
             'SecretsStoreDriverProviderAws',
+            cluster=cluster,
+        )
+
+        external_secrets_operator = ExternalSecretsOperator(
+            self,
+            'ExternalSecretsOperator',
             cluster=cluster,
         )
 
