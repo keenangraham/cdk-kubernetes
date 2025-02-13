@@ -836,10 +836,12 @@ class SparkBucketReadServiceAccount(Construct):
     def __init__(self, scope: Construct, construct_id: str, *, cluster: Cluster, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
+        NAMESPACE = 'data-stack-dev'
+
         service_account = cluster.add_service_account(
             'SparkBucketReadServiceAccount',
             name='spark-bucket-read-sa',
-            namespace='default',
+            namespace=NAMESPACE,
         )
 
         spark_bucket_read_policy = ManagedPolicy.from_managed_policy_arn(
@@ -870,7 +872,7 @@ class SparkBucketReadServiceAccount(Construct):
                 "kind": "SecretProviderClass",
                 "metadata": {
                     "name": "spark-aws-secrets",
-                    "namespace": "default"
+                    "namespace": NAMESPACE
                 },
                 "spec": {
                     "provider": "aws",
@@ -910,7 +912,7 @@ class SparkBucketReadServiceAccount(Construct):
                 "kind": "Role",
                 "metadata": {
                     "name": "spark-bucket-read-role",
-                    "namespace": "default"
+                    "namespace": NAMESPACE
                 },
                 "rules": [
                     {
@@ -929,7 +931,7 @@ class SparkBucketReadServiceAccount(Construct):
                 "kind": "RoleBinding",
                 "metadata": {
                     "name": "spark-bucket-read-rolebinding",
-                    "namespace": "default"
+                    "namespace": NAMESPACE
                 },
                 "roleRef": {
                     "apiGroup": "rbac.authorization.k8s.io",
@@ -940,7 +942,7 @@ class SparkBucketReadServiceAccount(Construct):
                     {
                         "kind": "ServiceAccount",
                         "name": "spark-bucket-read-sa",
-                        "namespace": "default"
+                        "namespace": NAMESPACE
                     }
                 ]
             }

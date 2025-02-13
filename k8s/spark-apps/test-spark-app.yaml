@@ -2,6 +2,7 @@ apiVersion: sparkoperator.k8s.io/v1beta2
 kind: SparkApplication
 metadata:
   name: test-spark
+  namespace: data-stack-dev
 spec:
   type: Python
   pythonVersion: "3"
