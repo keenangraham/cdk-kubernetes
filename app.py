@@ -1141,7 +1141,7 @@ class KubernetesStack(Stack):
 
 KubernetesStack(
     app,
-    'KubernetesStack2',
+    'KubernetesStack3',
     env=US_WEST_2,
 )
 
