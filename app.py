@@ -33,7 +33,7 @@ from constructs import Construct
 
 from shared_infrastructure.cherry_lab.environments import US_WEST_2
 
-from aws_cdk.lambda_layer_kubectl_v32 import KubectlV32Layer
+from aws_cdk.lambda_layer_kubectl_v31 import KubectlV31Layer
 
 from cdk_eks_karpenter import Karpenter
 
@@ -974,8 +974,8 @@ class KubernetesStack(Stack):
         cluster = Cluster(
             self,
             'Cluster',
-            version=KubernetesVersion.of(version='1.32'),
-            kubectl_layer=KubectlV32Layer(
+            version=KubernetesVersion.V1_31,
+            kubectl_layer=KubectlV31Layer(
                 self,
                 'kubectl',
             ),
@@ -1122,7 +1122,7 @@ class KubernetesStack(Stack):
 
 KubernetesStack(
     app,
-    'KubernetesStack',
+    'KubernetesStack2',
     env=US_WEST_2,
 )
 
