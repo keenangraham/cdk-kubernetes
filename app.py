@@ -838,11 +838,24 @@ class SparkBucketReadServiceAccount(Construct):
 
         NAMESPACE = 'data-stack-dev'
 
+        namespace_manifest = cluster.add_manifest(
+            f'{NAMESPACE}-ns',
+            {
+                'apiVersion': 'v1',
+                'kind': 'Namespace',
+                'metadata': {
+                    'name': NAMESPACE
+                }
+            }
+        )
+
         service_account = cluster.add_service_account(
             'SparkBucketReadServiceAccount',
             name='spark-bucket-read-sa',
             namespace=NAMESPACE,
         )
+
+        service_account.node.add_dependency(namespace_manifest)
 
         spark_bucket_read_policy = ManagedPolicy.from_managed_policy_arn(
             self,
@@ -865,7 +878,7 @@ class SparkBucketReadServiceAccount(Construct):
             )
         )
 
-        cluster.add_manifest(
+        secrets_provider = cluster.add_manifest(
             'spark-aws-secrets-provider',
             {
                 "apiVersion": "secrets-store.csi.x-k8s.io/v1",
@@ -905,7 +918,9 @@ class SparkBucketReadServiceAccount(Construct):
             }
         )
 
-        cluster.add_manifest(
+        secrets_provider.node.add_dependency(namespace_manifest)
+
+        read_role = cluster.add_manifest(
             'spark-bucket-read-role',
             {
                 "apiVersion": "rbac.authorization.k8s.io/v1",
@@ -924,7 +939,9 @@ class SparkBucketReadServiceAccount(Construct):
             }
         )
 
-        cluster.add_manifest(
+        read_role.node.add_dependency(namespace_manifest)
+
+        role_binding = cluster.add_manifest(
             'spark-bucket-read-rolebinding',
             {
                 "apiVersion": "rbac.authorization.k8s.io/v1",
@@ -947,6 +964,8 @@ class SparkBucketReadServiceAccount(Construct):
                 ]
             }
         )
+
+        role_binding.node.add_dependency(namespace_manifest)
 
 
 class KubernetesStack(Stack):
