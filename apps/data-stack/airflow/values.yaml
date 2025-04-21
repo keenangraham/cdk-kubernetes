@@ -2484,8 +2484,12 @@ config:
     colored_console_log: 'False'
     remote_logging: '{{- ternary "True" "False" .Values.elasticsearch.enabled }}'
   logging:
-    remote_logging: '{{- ternary "True" "False" .Values.elasticsearch.enabled }}'
+    remote_logging: 'True'
     colored_console_log: 'False'
+    remote_base_log_folder: 's3://airflow-k8s-logging'
+    remote_log_conn_id: 'aws_default'
+    logging_level: 'INFO'
+    log_filename_template: '{{ dag_id }}/{{ task_id }}/{{ execution_date }}/{{ try_number }}.log'
   metrics:
     statsd_on: '{{ ternary "True" "False" .Values.statsd.enabled }}'
     statsd_port: 9125
@@ -2542,7 +2546,10 @@ config:
   triggerer:
     default_capacity: 1000
 # yamllint enable rule:line-length
-
+serviceAccount:
+  name: airflow-logging-sa
+  annotations:
+    eks.amazonaws.com/role-arn: 'arn:aws:iam::618537831167:role/KubernetesStack3-ClusterAirflowLoggingServiceAccoun-dBqXEVpyeTaa'
 # Whether Airflow can launch workers and/or pods in multiple namespaces
 # If true, it creates ClusterRole/ClusterRolebinding (with access to entire cluster)
 multiNamespaceMode: false
