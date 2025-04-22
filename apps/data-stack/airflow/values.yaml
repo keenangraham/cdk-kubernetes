@@ -2545,10 +2545,6 @@ config:
   triggerer:
     default_capacity: 1000
 # yamllint enable rule:line-length
-serviceAccount:
-  name: airflow-logging-sa
-  annotations:
-    eks.amazonaws.com/role-arn: 'arn:aws:iam::618537831167:role/KubernetesStack3-ClusterAirflowLoggingServiceAccoun-dBqXEVpyeTaa'
 # Whether Airflow can launch workers and/or pods in multiple namespaces
 # If true, it creates ClusterRole/ClusterRolebinding (with access to entire cluster)
 multiNamespaceMode: false
