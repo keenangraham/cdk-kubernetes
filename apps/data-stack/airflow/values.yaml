@@ -550,10 +550,10 @@ workers:
     # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
     automountServiceAccountToken: true
     # Specifies whether a ServiceAccount should be created
-    create: true
+    create: false
     # The name of the ServiceAccount to use.
     # If not set and create is true, a name is generated using the release name
-    name: ~
+    name: airflow-logging-sa
     # Annotations to add to worker kubernetes service account.
     annotations:
       eks.amazonaws.com/role-arn: 'arn:aws:iam::618537831167:role/KubernetesStack3-ClusterAirflowLoggingServiceAccoun-dBqXEVpyeTaa'
@@ -1330,10 +1330,10 @@ webserver:
     # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
     automountServiceAccountToken: true
     # Specifies whether a ServiceAccount should be created
-    create: true
+    create: false
     # The name of the ServiceAccount to use.
     # If not set and create is true, a name is generated using the release name
-    name: ~
+    name: airflow-logging-sa
     # Annotations to add to worker kubernetes service account.
     annotations:
       eks.amazonaws.com/role-arn: 'arn:aws:iam::618537831167:role/KubernetesStack3-ClusterAirflowLoggingServiceAccoun-dBqXEVpyeTaa'
