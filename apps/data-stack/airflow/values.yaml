@@ -2488,7 +2488,6 @@ config:
     remote_base_log_folder: 's3://airflow-k8s-logging'
     remote_log_conn_id: 'aws_s3_logs_conn'
     logging_level: 'INFO'
-    log_filename_template: '{{ dag_id }}/{{ task_id }}/{{ execution_date }}/{{ try_number }}.log'
   metrics:
     statsd_on: '{{ ternary "True" "False" .Values.statsd.enabled }}'
     statsd_port: 9125
