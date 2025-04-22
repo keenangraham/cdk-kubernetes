@@ -545,11 +545,16 @@ workers:
   containerLifecycleHooks: {}
 
   # Create ServiceAccount
-  # Set ServiceAccount
   serviceAccount:
+    # default value is true
     # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
     automountServiceAccountToken: true
-    name: airflow-logging-sa
+    # Specifies whether a ServiceAccount should be created
+    create: true
+    # The name of the ServiceAccount to use.
+    # If not set and create is true, a name is generated using the release name
+    name: ~
+    # Annotations to add to worker kubernetes service account.
     annotations:
       eks.amazonaws.com/role-arn: 'arn:aws:iam::618537831167:role/KubernetesStack3-ClusterAirflowLoggingServiceAccoun-dBqXEVpyeTaa'
 
@@ -1320,11 +1325,16 @@ webserver:
   # Args to use when running the Airflow webserver (templated).
   args: ["bash", "-c", "exec airflow webserver"]
 
-  # Set ServiceAccount
   serviceAccount:
+    # default value is true
     # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
     automountServiceAccountToken: true
-    name: airflow-logging-sa
+    # Specifies whether a ServiceAccount should be created
+    create: true
+    # The name of the ServiceAccount to use.
+    # If not set and create is true, a name is generated using the release name
+    name: ~
+    # Annotations to add to worker kubernetes service account.
     annotations:
       eks.amazonaws.com/role-arn: 'arn:aws:iam::618537831167:role/KubernetesStack3-ClusterAirflowLoggingServiceAccoun-dBqXEVpyeTaa'
 
@@ -2476,7 +2486,7 @@ config:
     remote_logging: 'True'
     colored_console_log: 'False'
     remote_base_log_folder: 's3://airflow-k8s-logging'
-    remote_log_conn_id: 'aws_default'
+    remote_log_conn_id: 'aws_s3_logs_conn'
     logging_level: 'INFO'
     log_filename_template: '{{ dag_id }}/{{ task_id }}/{{ execution_date }}/{{ try_number }}.log'
   metrics:
