@@ -1097,7 +1097,45 @@ class SparkBucketReadServiceAccount(Construct):
 
         airflow_static_webserver_secret.node.add_dependency(namespace_manifest)
 
+class AirflowLoggingServiceAccount(Construct):
 
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        NAMESPACE = 'data-stack-dev'
+
+        service_account = cluster.add_service_account(
+            'AirflowLoggingServiceAccount',
+            name='airflow-logging-sa',
+            namespace=NAMESPACE,
+        )
+
+        service_account.add_to_principal_policy(
+            PolicyStatement(
+                effect=Effect.ALLOW,
+                actions=[
+                    's3:ListAllMyBuckets',
+                ],
+                resources=['*'],
+            )
+        )
+
+        service_account.add_to_principal_policy(
+            PolicyStatement(
+                effect=Effect.ALLOW,
+                actions=[
+                    '*',
+                ],
+                resources=['arn:aws:s3:::airflow-k8s-logging', 'arn:aws:s3:::airflow-k8s-logging/*'],
+            )
+        )
 
 class KubernetesStack(Stack):
 
@@ -1272,6 +1310,12 @@ class KubernetesStack(Stack):
         spark_bucket_read_service_account = SparkBucketReadServiceAccount(
             self,
             'SparkBucketReadServiceAccount',
+            cluster=cluster,
+        )
+
+        airflow_logging_service_account = AirflowLoggingServiceAccount(
+            self,
+            'AirflowLoggingServiceAccount',
             cluster=cluster,
         )
 
