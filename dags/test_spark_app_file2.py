@@ -33,10 +33,5 @@ with DAG(
         task_id='spark_task_from_file',
         namespace='data-stack-dev',
         application_file='k8s/spark-apps/test-spark-app.yaml',
-        executor_config={
-            'KubernetesExecutor': {
-                'service_account_name': 'spark-bucket-read-sa',
-                'namespace': 'data-stack-dev'
-            }
-        }
+        service_account_name='spark-bucket-read-sa'
     )
