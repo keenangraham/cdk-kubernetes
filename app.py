@@ -1111,11 +1111,24 @@ class AirflowLoggingServiceAccount(Construct):
 
         NAMESPACE = 'data-stack-dev'
 
+        namespace_manifest = cluster.add_manifest(
+            f'{NAMESPACE}-ns',
+            {
+                'apiVersion': 'v1',
+                'kind': 'Namespace',
+                'metadata': {
+                    'name': NAMESPACE
+                }
+            }
+        )
+
         service_account = cluster.add_service_account(
             'AirflowLoggingServiceAccount',
             name='airflow-logging-sa',
             namespace=NAMESPACE,
         )
+
+        service_account.node.add_dependency(namespace_manifest)
 
         service_account.add_to_principal_policy(
             PolicyStatement(
@@ -1136,6 +1149,65 @@ class AirflowLoggingServiceAccount(Construct):
                 resources=['arn:aws:s3:::airflow-k8s-logging', 'arn:aws:s3:::airflow-k8s-logging/*'],
             )
         )
+
+        # add kubernetes RBAC for using spark operator from this service account
+
+        spark_role = cluster.add_manifest(
+            'spark-operator-role',
+            {
+                'apiVersion': 'rbac.authorization.k8s.io/v1',
+                'kind': 'Role',
+                'metadata': {
+                    'name': 'spark-operator-role',
+                    'namespace': NAMESPACE
+                },
+                'rules': [
+                    {
+                        'apiGroups': ['sparkoperator.k8s.io'],
+                        'resources': [
+                            'sparkapplications',
+                            'sparkapplications/status',
+                            'sparkapplications/finalizers'
+                        ],
+                        'verbs': ['create', 'delete', 'deletecollection', 'get', 'list', 'patch', 'update', 'watch']
+                    },
+                    {
+                        'apiGroups': [''],
+                        'resources': ['pods', 'services', 'configmaps', 'secrets'],
+                        'verbs': ['create', 'delete', 'deletecollection', 'get', 'list', 'patch', 'update', 'watch']
+                    }
+                ]
+            }
+        )
+        
+        spark_role.node.add_dependency(namespace_manifest)
+
+        spark_role_binding = cluster.add_manifest(
+            'spark-operator-rolebinding',
+            {
+                'apiVersion': 'rbac.authorization.k8s.io/v1',
+                'kind': 'RoleBinding',
+                'metadata': {
+                    'name': 'spark-operator-rolebinding',
+                    'namespace': NAMESPACE
+                },
+                'subjects': [
+                    {
+                        'kind': 'ServiceAccount',
+                        'name': 'airflow-logging-sa',
+                        'namespace': NAMESPACE
+                    }
+                ],
+                'roleRef': {
+                    'kind': 'Role',
+                    'name': 'spark-operator-role',
+                    'apiGroup': 'rbac.authorization.k8s.io'
+                }
+            }
+        )
+        
+        spark_role_binding.node.add_dependency(spark_role)
+        spark_role_binding.node.add_dependency(service_account)
 
 class KubernetesStack(Stack):
 
