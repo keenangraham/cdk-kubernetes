@@ -1111,16 +1111,6 @@ class AirflowLoggingServiceAccount(Construct):
 
         NAMESPACE = 'data-stack-dev'
 
-        namespace_manifest = cluster.add_manifest(
-            f'{NAMESPACE}-ns',
-            {
-                'apiVersion': 'v1',
-                'kind': 'Namespace',
-                'metadata': {
-                    'name': NAMESPACE
-                }
-            }
-        )
 
         service_account = cluster.add_service_account(
             'AirflowLoggingServiceAccount',
@@ -1128,7 +1118,6 @@ class AirflowLoggingServiceAccount(Construct):
             namespace=NAMESPACE,
         )
 
-        service_account.node.add_dependency(namespace_manifest)
 
         service_account.add_to_principal_policy(
             PolicyStatement(
@@ -1180,8 +1169,6 @@ class AirflowLoggingServiceAccount(Construct):
             }
         )
         
-        spark_role.node.add_dependency(namespace_manifest)
-
         spark_role_binding = cluster.add_manifest(
             'spark-operator-rolebinding',
             {
