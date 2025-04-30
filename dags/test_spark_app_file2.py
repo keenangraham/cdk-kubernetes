@@ -35,7 +35,7 @@ with DAG(
         application_file='k8s/spark-apps/test-spark-app.yaml',
         executor_config={
             'KubernetesExecutor': {
-                'service_account_name': 'spark-bucket-read-sa',
+                'service_account_name': 'airflow-logging-sa',
                 'namespace': 'data-stack-dev'
             }
         }
