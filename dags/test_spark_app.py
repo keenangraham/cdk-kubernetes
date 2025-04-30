@@ -141,6 +141,6 @@ with DAG(
 
     spark_task = SparkKubernetesOperator(
         task_id='spark_task',
-        namespace='default',
+        namespace='data-stack-dev',
         template_spec=spark_app
     )
