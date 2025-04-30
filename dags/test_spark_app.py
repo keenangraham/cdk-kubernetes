@@ -20,7 +20,7 @@ spark_app = {
   "kind": "SparkApplication",
   "metadata": {
     "name": "test-spark",
-    "namespace": "default"
+    "namespace": "data-stack-dev"
   },
   "spec": {
     "type": "Python",
