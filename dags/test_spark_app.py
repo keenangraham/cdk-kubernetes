@@ -142,5 +142,11 @@ with DAG(
     spark_task = SparkKubernetesOperator(
         task_id='spark_task',
         namespace='data-stack-dev',
-        template_spec=spark_app
+        template_spec=spark_app,
+        executor_config={
+            'KubernetesExecutor': {
+                'service_account_name': 'spark-bucket-read-sa',
+                'namespace': 'data-stack-dev'
+            }
+        }
     )
