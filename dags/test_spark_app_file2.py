@@ -32,11 +32,5 @@ with DAG(
     spark_task = SparkKubernetesOperator(
         task_id='spark_task_from_file',
         namespace='data-stack-dev',
-        application_file='spark-apps/test-spark-app.yaml',
-        executor_config={
-            'KubernetesExecutor': {
-                'service_account_name': 'airflow-logging-sa',
-                'namespace': 'data-stack-dev'
-            }
-        }
+        application_file='spark-apps/test-spark-app.yaml'
     )
