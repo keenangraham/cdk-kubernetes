@@ -1,0 +1,43 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: test-spark
+  namespace: data-stack-dev
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: public.ecr.aws/cherry-lab/cherry-lab:spark-3.5.4-s3
+  imagePullPolicy: IfNotPresent
+  mainApplicationFile: https://raw.githubusercontent.com/keenangraham/cdk-kubernetes/refs/heads/main/spark/test-spark.py
+  sparkVersion: 3.5.4
+  driver:
+    coreRequest: "1000m"
+    memory: "2048M"
+    serviceAccount: spark-bucket-read-sa
+    envVars:
+      IVY_CACHE_DIR: /tmp/.ivy2
+    volumeMounts:
+      - name: ivy-cache
+        mountPath: /tmp/.ivy2
+  executor:
+    instances: 1
+    coreRequest: "100m"
+    memory: "512M"
+    serviceAccount: spark-bucket-read-sa
+  dynamicAllocation:
+    enabled: true
+    initialExecutors: 1
+    maxExecutors: 10
+    minExecutors: 1
+  volumes:
+    - name: ivy-cache
+      emptyDir: {}
+  sparkConf:
+    "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
+    "spark.jars.packages": "org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.11.1026"
+    "spark.jars.ivy": "/tmp/.ivy2"
+    "log4j.logger.org.apache.hadoop.fs.s3a": "DEBUG"
+    "log4j.logger.com.amazonaws": "DEBUG"
+    "log4j.logger.com.amazonaws.internal": "INFO"
