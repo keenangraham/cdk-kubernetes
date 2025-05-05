@@ -23,7 +23,7 @@ def main():
 
     print(f"Number of rows in the DataFrame: {row_count}")
 #    df = spark.read.text("s3a://encode-imputation-logs/")
-    df = spark.read.text("s3a://hic-files-transfer-logs/2021-*")
+    df = spark.read.text("s3a://hic-files-transfer-logs/*")
 #    df.persist()
     print('Number of logs', df.count())
 
