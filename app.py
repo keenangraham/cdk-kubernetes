@@ -972,6 +972,21 @@ class SparkBucketReadServiceAccount(Construct):
             )
         )
 
+        service_account.add_to_principal_policy(
+            PolicyStatement(
+                effect=Effect.ALLOW,
+                actions=[
+                    's3:GetObject',
+                    's3:PutObject',
+                    's3:DeleteObject',
+                    's3:ListBucket'
+                ],
+                resources=[
+                    'arn:aws:s3:::spark-log-parsing-test',
+                    'arn:aws:s3:::spark-log-parsing-test/*'
+                ]
+            )
+        )
         secrets_provider = cluster.add_manifest(
             'spark-aws-secrets-provider',
             {
