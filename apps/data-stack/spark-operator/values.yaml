@@ -43,7 +43,7 @@ image:
 
 controller:
   # -- Number of replicas of controller.
-  replicas: 3
+  replicas: 2
 
   # -- Reconcile concurrency, higher values might increase memory usage.
   workers: 10
@@ -216,7 +216,7 @@ webhook:
   enable: true
 
   # -- Number of replicas of webhook server.
-  replicas: 3
+  replicas: 2
 
   # -- Configure the verbosity of logging, can be one of `debug`, `info`, `error`.
   logLevel: info
