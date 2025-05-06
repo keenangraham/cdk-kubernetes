@@ -114,7 +114,7 @@ controller:
   # Create a tmp directory to write Spark artifacts to for deployed Spark apps.
   - name: tmp
     emptyDir:
-      sizeLimit: 1Gi
+      sizeLimit: 5Gi
 
   # -- Node selector for controller pods.
   nodeSelector: {}
@@ -188,7 +188,7 @@ controller:
     enable: false
     # -- The number of pods that must be available.
     # Require `controller.replicas` to be greater than 1
-    minAvailable: 1
+    minAvailable: 3
 
   pprof:
     # -- Specifies whether to enable pprof.
@@ -216,7 +216,7 @@ webhook:
   enable: true
 
   # -- Number of replicas of webhook server.
-  replicas: 1
+  replicas: 3
 
   # -- Configure the verbosity of logging, can be one of `debug`, `info`, `error`.
   logLevel: info
@@ -342,7 +342,7 @@ webhook:
     enable: false
     # -- The number of pods that must be available.
     # Require `webhook.replicas` to be greater than 1
-    minAvailable: 1
+    minAvailable: 3
 
 spark:
   # -- List of namespaces where to run spark jobs.
