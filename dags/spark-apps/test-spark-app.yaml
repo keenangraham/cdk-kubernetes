@@ -10,30 +10,19 @@ spec:
   image: public.ecr.aws/cherry-lab/cherry-lab:spark-3.5.4-s3
   imagePullPolicy: IfNotPresent
   mainApplicationFile: https://raw.githubusercontent.com/keenangraham/cdk-kubernetes/refs/heads/main/spark/test-spark.py
-  sparkVersion: 3.5.4
+  sparkVersion: 3.5.3
   driver:
     labels: 
       app.kubernetes.io/name: "test-spark-app"
     coreRequest: "1000m"
     memory: "2048M"
     serviceAccount: spark-bucket-read-sa
-    envVars:
-      IVY_CACHE_DIR: /tmp/.ivy2
-    volumeMounts:
-      - name: ivy-cache
-        mountPath: /tmp/.ivy2
   executor:
-    coreRequest: "100m"
-    memory: "512M"
+    coreRequest: "200m"
+    memory: "1024M"
     serviceAccount: spark-bucket-read-sa
   dynamicAllocation:
     enabled: true
     initialExecutors: 1
-    maxExecutors: 100
+    maxExecutors: 25
     minExecutors: 1
-  volumes:
-    - name: ivy-cache
-      emptyDir: {}
-  sparkConf:
-     "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
-     "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.auth.EnvironmentVariableCredentialsProvider"
