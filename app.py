@@ -725,6 +725,52 @@ class ArangoDB(Construct):
             }
         )
 
+class ArangoBackupServiceAccount(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        service_account = cluster.add_service_account(
+            'ArangoBackupServiceAccount',
+            name='arangodb-backup-sa',
+        )
+
+        service_account.add_to_principal_policy(
+            PolicyStatement(
+                effect=Effect.ALLOW,
+                actions=[
+                    's3:ListAllMyBuckets',
+                ],
+                resources=['*'],
+            )
+        )
+
+        service_account.add_to_principal_policy(
+            PolicyStatement(
+                effect=Effect.ALLOW,
+                actions=[
+                    '*',
+                ],
+                resources=['arn:aws:s3:::arangobackup'],
+            )
+        )
+
+        service_account.add_to_principal_policy(
+            PolicyStatement(
+                effect=Effect.ALLOW,
+                actions=[
+                    '*',
+                ],
+                resources=['arn:aws:s3:::arangobackup/*'],
+            )
+        )
 
 class MetricsServer(Construct):
 
