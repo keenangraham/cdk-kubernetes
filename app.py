@@ -1112,6 +1112,7 @@ class SparkBucketReadServiceAccount(Construct):
 
         airflow_static_webserver_secret.node.add_dependency(namespace_manifest)
 
+
 class AirflowLoggingServiceAccount(Construct):
 
     def __init__(
@@ -1126,13 +1127,11 @@ class AirflowLoggingServiceAccount(Construct):
 
         NAMESPACE = 'data-stack-dev'
 
-
         service_account = cluster.add_service_account(
             'AirflowLoggingServiceAccount',
             name='airflow-logging-sa',
             namespace=NAMESPACE,
         )
-
 
         service_account.add_to_principal_policy(
             PolicyStatement(
@@ -1150,12 +1149,14 @@ class AirflowLoggingServiceAccount(Construct):
                 actions=[
                     '*',
                 ],
-                resources=['arn:aws:s3:::airflow-k8s-logging', 'arn:aws:s3:::airflow-k8s-logging/*'],
+                resources=[
+                    'arn:aws:s3:::airflow-k8s-logging',
+                    'arn:aws:s3:::airflow-k8s-logging/*'
+                ],
             )
         )
 
         # add kubernetes RBAC for using spark operator from this service account
-
         spark_role = cluster.add_manifest(
             'spark-operator-role',
             {
@@ -1210,6 +1211,7 @@ class AirflowLoggingServiceAccount(Construct):
         
         spark_role_binding.node.add_dependency(spark_role)
         spark_role_binding.node.add_dependency(service_account)
+
 
 class KubernetesStack(Stack):
 
