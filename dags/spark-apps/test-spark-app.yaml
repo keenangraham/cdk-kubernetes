@@ -23,9 +23,8 @@ spec:
       - name: ivy-cache
         mountPath: /tmp/.ivy2
   executor:
-    instances: 1
     coreRequest: "100m"
-    memory: "256M"
+    memory: "512M"
     serviceAccount: spark-bucket-read-sa
   dynamicAllocation:
     enabled: true
