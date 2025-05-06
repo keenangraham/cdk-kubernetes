@@ -18,13 +18,13 @@ spec:
     memory: "2048M"
     serviceAccount: spark-bucket-read-sa
   executor:
-    coreRequest: "200m"
-    memory: "1024M"
+    coreRequest: "100m"
+    memory: "512M"
     serviceAccount: spark-bucket-read-sa
   dynamicAllocation:
     enabled: true
     initialExecutors: 1
-    maxExecutors: 25
+    maxExecutors: 10
     minExecutors: 1
   sparkConf:
       "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
