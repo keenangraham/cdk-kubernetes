@@ -26,3 +26,6 @@ spec:
     initialExecutors: 1
     maxExecutors: 25
     minExecutors: 1
+  sparkConf:
+      "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
+      "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
