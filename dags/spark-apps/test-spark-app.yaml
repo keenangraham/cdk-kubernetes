@@ -17,6 +17,11 @@ spec:
     coreRequest: "1000m"
     memory: "2048M"
     serviceAccount: spark-bucket-read-sa
+    envVars:
+      IVY_CACHE_DIR: /tmp/.ivy2
+    volumeMounts:
+      - name: ivy-cache
+        mountPath: /tmp/.ivy2
   executor:
     coreRequest: "100m"
     memory: "512M"
@@ -26,8 +31,12 @@ spec:
     initialExecutors: 1
     maxExecutors: 5
     minExecutors: 1
+  volumes:
+    - name: ivy-cache
+      emptyDir: {}
   sparkConf:
       "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
       "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
       "spark.jars.packages": "org.apache.hadoop:hadoop-aws:3.4.1, software.amazon.awssdk:aws-sdk-java:2.31.36"
       "spark.hadoop.fs.s3a.sdk.version": "2"
+      "spark.jars.ivy": "/tmp/.ivy2"
