@@ -10,7 +10,7 @@ def main():
 
     log_regex_pattern = r'([^ ]*) ([^ ]*) \[(.*?)\] ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ("[^"]+"|-) (\d+|-|-) ([^ ]*) (\d+|-|-) (\d+|-|-) (\d+|-|-) (\d+|-|-) ("[^"]*"|-) ("[^"]*"|-) ([^ ]*)'
 
-    df = spark.read.text("s3a://encode-public-logs/2019-02-08-23-18-51-A6E3463530330DC3")
+    df = spark.read.text("s3a://hic-files-transfer-logs/2024-08-*")
     print('Number of logs', df.count())
 
     parsed_df = df.select(
@@ -35,7 +35,7 @@ def main():
     regexp_extract(col('value'), log_regex_pattern, 18).alias('version_id')
     )
 
-    parsed_df.coalesce(1).write.mode('overwrite').parquet('s3a://spark-log-parsing-test/hic-logs')
+    parsed_df.write.mode('overwrite').parquet('s3a://spark-log-parsing-test/hic-logs')
 
 
 if __name__ == "__main__":
