@@ -10,7 +10,7 @@ def main():
 
     log_regex_pattern = r'([^ ]*) ([^ ]*) \[(.*?)\] ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ("[^"]+"|-) (\d+|-|-) ([^ ]*) (\d+|-|-) (\d+|-|-) (\d+|-|-) (\d+|-|-) ("[^"]*"|-) ("[^"]*"|-) ([^ ]*)'
 
-    df = spark.read.text("s3a://hic-files-transfer-logs/*")
+    df = spark.read.text("s3a://encode-public-logs/2019-02-08-23-18-51-A6E3463530330DC3")
     print('Number of logs', df.count())
 
     parsed_df = df.select(
