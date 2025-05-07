@@ -24,7 +24,7 @@ spec:
   dynamicAllocation:
     enabled: true
     initialExecutors: 1
-    maxExecutors: 10
+    maxExecutors: 5
     minExecutors: 1
   sparkConf:
       "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
