@@ -7,7 +7,7 @@ spec:
   type: Python
   pythonVersion: "3"
   mode: cluster
-  image: spark:3.5.5
+  image: ojolanki/spark-s3:3.5.5
   imagePullPolicy: IfNotPresent
   mainApplicationFile: https://raw.githubusercontent.com/keenangraham/cdk-kubernetes/refs/heads/main/spark/test-spark.py
   sparkVersion: 3.5.5
@@ -17,11 +17,6 @@ spec:
     coreRequest: "1000m"
     memory: "2048M"
     serviceAccount: spark-bucket-read-sa
-    envVars:
-      IVY_CACHE_DIR: /tmp/.ivy2
-    volumeMounts:
-      - name: ivy-cache
-        mountPath: /tmp/.ivy2
   executor:
     coreRequest: "100m"
     memory: "512M"
@@ -31,12 +26,5 @@ spec:
     initialExecutors: 1
     maxExecutors: 5
     minExecutors: 1
-  volumes:
-    - name: ivy-cache
-      emptyDir: {}
   sparkConf:
-      "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
       "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
-      "spark.jars.packages": "org.apache.hadoop:hadoop-aws:3.4.1"
-      "spark.hadoop.fs.s3a.sdk.version": "2"
-      "spark.jars.ivy": "/tmp/.ivy2"
