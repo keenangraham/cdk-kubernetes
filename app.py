@@ -992,11 +992,8 @@ class SparkBucketReadServiceAccount(Construct):
             PolicyStatement(
                 effect=Effect.ALLOW,
                 actions=[
-                    's3:GetObjectVersion',
-                    's3:GetObject',
-                    's3:GetBucketAcl',
-                    's3:ListBucket',
-                    's3:GetBucketLocation'
+                    's3:Get*',
+                    's3:ListBucket'
                 ],
                 resources=[
                     'arn:aws:s3:::encode-public-logs',
