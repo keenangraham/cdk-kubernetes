@@ -28,3 +28,4 @@ spec:
     minExecutors: 1
   sparkConf:
       "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.WebIdentityTokenFileCredentialsProvider"
+      "spark.hadoop.fs.s3a.sdk.version": "2"
