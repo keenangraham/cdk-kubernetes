@@ -7,10 +7,10 @@ spec:
   type: Python
   pythonVersion: "3"
   mode: cluster
-  image: ojolanki/spark-s3:3.5.5-withhadoopaws 
+  image: public.ecr.aws/cherry-lab/cherry-lab:spark-3.5.4-s3
   imagePullPolicy: IfNotPresent
   mainApplicationFile: https://raw.githubusercontent.com/keenangraham/cdk-kubernetes/refs/heads/main/spark/test-spark.py
-  sparkVersion: 3.5.5
+  sparkVersion: 3.5.3
   driver:
     labels: 
       app.kubernetes.io/name: "test-spark-app"
@@ -69,9 +69,8 @@ spec:
     maxExecutors: 5
     minExecutors: 1
   sparkConf:
-    "spark.hadoop.fs.s3a.sdk.version": "2"
-    "spark.hadoop.fs.s3a.bucket.encode-public-logs.aws.credentials.provider": "software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider"
-    "spark.hadoop.fs.s3a.bucket.spark-log-parsing-test.aws.credentials.provider": "software.amazon.awssdk.auth.credentials.WebIdentityTokenFileCredentialsProvider"
+    "spark.hadoop.fs.s3a.bucket.encode-public-logs.aws.credentials.provider": "com.amazonaws.auth.EnvironmentVariableCredentialsProvider"
+    "spark.hadoop.fs.s3a.bucket.spark-log-parsing-test.aws.credentials.provider": "com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
     "log4j.logger.org.apache.hadoop.fs.s3a": "DEBUG"
     "log4j.logger.com.amazonaws": "DEBUG"
     "log4j.logger.com.amazonaws.internal": "DEBUG"
