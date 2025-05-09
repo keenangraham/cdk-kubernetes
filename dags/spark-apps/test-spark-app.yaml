@@ -17,6 +17,27 @@ spec:
     coreRequest: "1000m"
     memory: "2048M"
     serviceAccount: spark-bucket-read-sa
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws-spark-access-key
+            key: ACCESS_KEY
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws-spark-secret-access-key
+            key: SECRET_ACCESS_KEY
+    volumeMounts:
+      - name: aws-creds
+        mountPath: /tmp/.aws-creds
+  volumes:
+    - name: aws-creds
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: "spark-aws-secrets"
   executor:
     coreRequest: "100m"
     memory: "512M"
