@@ -72,3 +72,6 @@ spec:
     "spark.hadoop.fs.s3a.sdk.version": "2"
     "spark.hadoop.fs.s3a.bucket.encode-public-logs.aws.credentials.provider": "software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider"
     "spark.hadoop.fs.s3a.bucket.spark-log-parsing-test.aws.credentials.provider": "software.amazon.awssdk.auth.credentials.WebIdentityTokenFileCredentialsProvider"
+    "log4j.logger.org.apache.hadoop.fs.s3a": "DEBUG"
+    "log4j.logger.com.amazonaws": "DEBUG"
+    "log4j.logger.com.amazonaws.internal": "DEBUG"
