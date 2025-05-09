@@ -1002,6 +1002,19 @@ class SparkBucketReadServiceAccount(Construct):
             )
         )
 
+        service_account.add_to_principal_policy(
+            PolicyStatement(
+                effect=Effect.ALLOW,
+                actions=[
+                    '*',
+                ],
+                resources=[
+                    'arn:aws:s3:::airflow-k8s-logging',
+                    'arn:aws:s3:::airflow-k8s-logging/*'
+                ],
+            )
+        )
+
         secrets_provider = cluster.add_manifest(
             'spark-aws-secrets-provider',
             {
