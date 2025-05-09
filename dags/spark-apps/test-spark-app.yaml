@@ -72,3 +72,4 @@ spec:
     "spark.hadoop.fs.s3a.sdk.version": "2"
     "spark.hadoop.fs.s3a.bucket.encode-public-logs.aws.credentials.provider": "software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider"
     "spark.hadoop.fs.s3a.bucket.spark-log-parsing-test.aws.credentials.provider": "software.amazon.awssdk.auth.credentials.WebIdentityTokenFileCredentialsProvider"
+    "spark.hadoop.fs.s3a.bucket.airflow-k8s-logging.aws.credentials.provider": "software.amazon.awssdk.auth.credentials.WebIdentityTokenFileCredentialsProvider"
