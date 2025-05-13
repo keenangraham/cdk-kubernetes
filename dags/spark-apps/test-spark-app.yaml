@@ -7,7 +7,7 @@ spec:
   type: Python
   pythonVersion: "3"
   mode: cluster
-  image: public.ecr.aws/cherry-lab/cherry-lab:spark-3.5.4-s3
+  image: ojolanki/spark-s3:3.5.3-boto3 
   imagePullPolicy: IfNotPresent
   mainApplicationFile: https://raw.githubusercontent.com/keenangraham/cdk-kubernetes/refs/heads/main/spark/test-spark.py
   sparkVersion: 3.5.3
