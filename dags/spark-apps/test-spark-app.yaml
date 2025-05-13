@@ -39,8 +39,8 @@ spec:
         volumeAttributes:
           secretProviderClass: "spark-aws-secrets"
   executor:
-    coreRequest: "100m"
-    memory: "512M"
+    coreRequest: "1000m"
+    memory: "2048M"
     serviceAccount: spark-bucket-read-sa
     env:
       - name: AWS_ACCESS_KEY_ID
