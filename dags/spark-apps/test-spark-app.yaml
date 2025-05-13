@@ -65,7 +65,7 @@ spec:
           secretProviderClass: "spark-aws-secrets"
   dynamicAllocation:
     enabled: true
-    initialExecutors: 2
+    initialExecutors: 1
     maxExecutors: 10
     minExecutors: 1
   sparkConf:
