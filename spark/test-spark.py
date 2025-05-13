@@ -3,10 +3,13 @@ from pyspark.sql import Row
 from pyspark.sql.functions import col, regexp_extract
 
 
+
 def main():
     spark = SparkSession.builder \
-        .appName("S3 Log Reader") \
-        .getOrCreate()
+    .appName("S3 Log Reader") \
+    .config("spark.hadoop.mapreduce.input.fileinputformat.split.minsize", "134217728")  \
+    .config("spark.hadoop.mapreduce.input.fileinputformat.split.maxsize", "268435456")  \
+    .getOrCreate()
 
     log_regex_pattern = r'([^ ]*) ([^ ]*) \[(.*?)\] ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ("[^"]+"|-) (\d+|-|-) ([^ ]*) (\d+|-|-) (\d+|-|-) (\d+|-|-) (\d+|-|-) ("[^"]*"|-) ("[^"]*"|-) ([^ ]*)'
 
