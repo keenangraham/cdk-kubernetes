@@ -85,7 +85,7 @@ def main():
     regexp_extract(col('value'), log_regex_pattern, 18).alias('version_id')
     )
 
-    parsed_df.coalesce(50).write.mode('overwrite').parquet('s3a://spark-log-parsing-test/encode-logs')
+    parsed_df.repartition(30).write.mode('overwrite').parquet('s3a://spark-log-parsing-test/encode-logs')
 
 
 if __name__ == "__main__":
