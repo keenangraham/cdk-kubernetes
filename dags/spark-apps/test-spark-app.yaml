@@ -28,6 +28,8 @@ spec:
           secretKeyRef:
             name: aws-spark-secret-access-key
             key: SECRET_ACCESS_KEY
+      - name: DATE
+        value: "{{ ds }}"
     volumeMounts:
       - name: aws-creds
         mountPath: /tmp/.aws-creds

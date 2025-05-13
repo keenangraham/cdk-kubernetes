@@ -15,6 +15,7 @@ default_args = {
 }
 
 date = "{{ ds }}"
+print(date)
 # Define path to your Spark application YAML
 # This assumes the DAG file is in a structure like airflow/dags/ and the YAML is in the repo
 # REPO_ROOT = Path(__file__).parents[2]  # Adjust based on your folder structure
