@@ -14,8 +14,8 @@ spec:
   driver:
     labels: 
       app.kubernetes.io/name: "test-spark-app"
-    coreRequest: "1000m"
-    memory: "4096M"
+    coreRequest: "2000m"
+    memory: "8192M"
     serviceAccount: spark-bucket-read-sa
     env:
       - name: AWS_ACCESS_KEY_ID
