@@ -62,7 +62,7 @@ def main():
     print("*****************")
     print('DATE IS:' + os.environ['DATE'])
     print("*****************")
-    files_to_read = get_s3a_paths(s3_client, 'encode-public-logs', '2023-03-09')
+    files_to_read = get_s3a_paths(s3_client, 'encode-public-logs', '2024-03-15')
     df = spark.read.text(files_to_read)
     print('Number of logs', df.count())
 
