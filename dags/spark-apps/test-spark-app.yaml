@@ -15,7 +15,7 @@ spec:
     labels: 
       app.kubernetes.io/name: "test-spark-app"
     coreRequest: "1000m"
-    memory: "2048M"
+    memory: "4096M"
     serviceAccount: spark-bucket-read-sa
     env:
       - name: AWS_ACCESS_KEY_ID
@@ -65,8 +65,8 @@ spec:
           secretProviderClass: "spark-aws-secrets"
   dynamicAllocation:
     enabled: true
-    initialExecutors: 1
-    maxExecutors: 5
+    initialExecutors: 2
+    maxExecutors: 10
     minExecutors: 1
   sparkConf:
     "spark.hadoop.fs.s3a.bucket.encode-public-logs.aws.credentials.provider": "com.amazonaws.auth.EnvironmentVariableCredentialsProvider"
