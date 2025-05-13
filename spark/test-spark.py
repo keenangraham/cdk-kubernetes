@@ -59,6 +59,9 @@ def main():
 
     session = boto3.Session(aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'], aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'])
     s3_client = session.client('s3')
+    print("*****************")
+    print('DATE IS:' + os.environ['DATE'])
+    print("*****************")
     files_to_read = get_s3a_paths(s3_client, 'encode-public-logs', '2023-03-09')
     df = spark.read.text(files_to_read)
     print('Number of logs', df.count())

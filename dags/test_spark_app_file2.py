@@ -14,6 +14,7 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
+date = {{ ds }}
 # Define path to your Spark application YAML
 # This assumes the DAG file is in a structure like airflow/dags/ and the YAML is in the repo
 # REPO_ROOT = Path(__file__).parents[2]  # Adjust based on your folder structure
@@ -32,5 +33,8 @@ with DAG(
     spark_task = SparkKubernetesOperator(
         task_id='spark_task_from_file',
         namespace='data-stack-dev',
-        application_file='spark-apps/test-spark-app.yaml'
+        application_file='spark-apps/test-spark-app.yaml',
+        env_vars={
+            'DATE': date
+        }
     )
