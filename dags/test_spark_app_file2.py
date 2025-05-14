@@ -8,7 +8,6 @@ from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKu
 default_args = {
     'owner': 'me',
     'depends_on_past': False,
-    'start_date': datetime(2025, 2, 4),
     'retries': 1,
     'schedule': None,
     'retry_delay': timedelta(minutes=5),
@@ -22,10 +21,13 @@ default_args = {
 
 with DAG(
     dag_id='test-spark-app-file',
+    start_date=datetime(2025, 5, 1),
+    end_date=datetime(2025, 5, 5),
     default_args=default_args,
     description='A DAG to run Spark on Kubernetes',
     schedule_interval=timedelta(days=1),
-    catchup=False,
+    max_active_runs=1,
+    catchup=True,
 ) as dag:
 
     # Use the application_file parameter to directly point to the YAML file

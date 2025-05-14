@@ -59,10 +59,11 @@ def main():
 
     session = boto3.Session(aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'], aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'])
     s3_client = session.client('s3')
+    date = os.environ['DATE']
     print("*****************")
-    print('DATE IS:' + os.environ['DATE'])
+    print('DATE IS:' + date)
     print("*****************")
-    files_to_read = get_s3a_paths(s3_client, 'encode-public-logs', '2024-03-15')
+    files_to_read = get_s3a_paths(s3_client, 'encode-public-logs', date)
     df = spark.read.text(files_to_read)
     print('Number of logs', df.count())
 
@@ -87,8 +88,8 @@ def main():
     regexp_extract(col('value'), log_regex_pattern, 17).alias('user_agent'),
     regexp_extract(col('value'), log_regex_pattern, 18).alias('version_id')
     )
-
-    parsed_df.repartition(30).write.mode('overwrite').parquet('s3a://spark-log-parsing-test/encode-logs')
+    output_path = f's3a://spark-log-parsing-test/encode-logs/{date}'
+    parsed_df.repartition(30).write.mode('overwrite').parquet(output_path)
 
 
 if __name__ == "__main__":
