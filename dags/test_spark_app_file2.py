@@ -9,7 +9,7 @@ default_args = {
     'owner': 'me',
     'depends_on_past': False,
     'retries': 1,
-    'schedule': None,
+    'schedule': '@daily',
     'retry_delay': timedelta(minutes=5),
 }
 
