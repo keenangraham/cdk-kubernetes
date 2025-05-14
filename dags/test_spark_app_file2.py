@@ -9,14 +9,9 @@ default_args = {
     'owner': 'me',
     'depends_on_past': False,
     'retries': 1,
-    'schedule': '@daily',
     'retry_delay': timedelta(minutes=5),
 }
 
-# Define path to your Spark application YAML
-# This assumes the DAG file is in a structure like airflow/dags/ and the YAML is in the repo
-# REPO_ROOT = Path(__file__).parents[2]  # Adjust based on your folder structure
-# SPARK_APP_YAML_PATH = str(REPO_ROOT / "k8s/spark-apps/test-spark-app.yaml")
 
 
 with DAG(
@@ -31,6 +26,7 @@ with DAG(
 ) as dag:
 
     # Use the application_file parameter to directly point to the YAML file
+    # note that this is a relative path to the DAG file
     spark_task = SparkKubernetesOperator(
         task_id='spark_task_from_file',
         namespace='data-stack-dev',
