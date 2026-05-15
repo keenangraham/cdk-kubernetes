@@ -16,11 +16,12 @@ from aws_cdk.aws_iam import User
 from aws_cdk.aws_iam import Effect
 
 from aws_cdk.aws_eks import Cluster
-from aws_cdk.aws_eks import KubernetesVersion
 from aws_cdk.aws_eks import AlbControllerOptions
 from aws_cdk.aws_eks import AlbControllerVersion
 from aws_cdk.aws_eks import CapacityType
 from aws_cdk.aws_eks import CfnAddon
+from aws_cdk.aws_eks import HelmChart
+from aws_cdk.aws_eks import KubernetesVersion
 from aws_cdk.aws_eks import ServiceAccount
 
 from aws_cdk.aws_sqs import Queue
@@ -260,7 +261,7 @@ class ExternalSecretsOperator(Construct):
             }
         )
 
-        chart = cluster.add_helm_chart(
+        self.chart = cluster.add_helm_chart(
             'ExternalSecretsOperator',
             chart='external-secrets',
             repository='https://charts.external-secrets.io',
@@ -269,7 +270,7 @@ class ExternalSecretsOperator(Construct):
             version='0.14.2',
         )
 
-        chart.node.add_dependency(eso_namespace)
+        self.chart.node.add_dependency(eso_namespace)
 
         password_generator = cluster.add_manifest(
             'ESOPasswordGenerator',
@@ -295,7 +296,7 @@ class ExternalSecretsOperator(Construct):
             }
         )
 
-        password_generator.node.add_dependency(eso_namespace)
+        password_generator.node.add_dependency(self.chart)
 
         password_test = cluster.add_manifest(
             'PasswordTest',
@@ -326,7 +327,7 @@ class ExternalSecretsOperator(Construct):
             }
         )
 
-        password_test.node.add_dependency(eso_namespace)
+        password_test.node.add_dependency(self.chart)
 
 
 class ExternalDns(Construct):
@@ -927,7 +928,7 @@ spark_aws_secret_objects = """- objectName: "test/spark/read-cross-acccount-buck
 
 class SparkBucketReadServiceAccount(Construct):
 
-    def __init__(self, scope: Construct, construct_id: str, *, cluster: Cluster, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, *, cluster: Cluster, external_secrets_operator: ExternalSecretsOperator, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         NAMESPACE = 'data-stack-dev'
@@ -1139,6 +1140,7 @@ class SparkBucketReadServiceAccount(Construct):
         )
 
         airflow_static_webserver_secret.node.add_dependency(namespace_manifest)
+        airflow_static_webserver_secret.node.add_dependency(external_secrets_operator.chart)
 
 
 class AirflowLoggingServiceAccount(Construct):
@@ -1415,6 +1417,7 @@ class KubernetesStack(Stack):
             self,
             'SparkBucketReadServiceAccount',
             cluster=cluster,
+            external_secrets_operator=external_secrets_operator,
         )
 
         airflow_logging_service_account = AirflowLoggingServiceAccount(
