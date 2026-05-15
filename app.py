@@ -1421,11 +1421,11 @@ class KubernetesStack(Stack):
             cluster=cluster,
         )
 
-        arangodb = ArangoDB(
-            self,
-            'ArangoDB',
-            cluster=cluster,
-        )
+        # arangodb = ArangoDB(
+        #     self,
+        #     'ArangoDB',
+        #     cluster=cluster,
+        # )
 
         test_secrets_store_service_account = TestSecretsStoreServiceAccount(
             self,
