@@ -284,7 +284,7 @@ class ExternalSecretsOperator(Construct):
                 'spec': {
                     'kind': 'Password',
                     'generator': {
-                        'passwordSpec': {                            
+                        'passwordSpec': {
                             'length': 42,
                             'digits': 20,
                             'symbols': 0,
@@ -916,6 +916,25 @@ class ArgoCD(Construct):
         self.manifest.node.add_dependency(cluster.alb_controller)
 
 
+class DataStackNamespace(Construct):
+
+    def __init__(self, scope: Construct, construct_id: str, *, cluster: Cluster, **kwargs) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        self.name = 'data-stack-dev'
+
+        self.manifest = cluster.add_manifest(
+            f'{self.name}-ns',
+            {
+                'apiVersion': 'v1',
+                'kind': 'Namespace',
+                'metadata': {
+                    'name': self.name
+                }
+            }
+        )
+
+
 spark_aws_secret_objects = """- objectName: "test/spark/read-cross-acccount-bucket"
   objecttype: "secretsmanager"
   jmesPath:
@@ -928,29 +947,25 @@ spark_aws_secret_objects = """- objectName: "test/spark/read-cross-acccount-buck
 
 class SparkBucketReadServiceAccount(Construct):
 
-    def __init__(self, scope: Construct, construct_id: str, *, cluster: Cluster, external_secrets_operator: ExternalSecretsOperator, **kwargs) -> None:
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        external_secrets_operator: ExternalSecretsOperator,
+        data_stack_namespace: DataStackNamespace,
+        **kwargs
+    ) -> None:
         super().__init__(scope, construct_id, **kwargs)
-
-        NAMESPACE = 'data-stack-dev'
-
-        namespace_manifest = cluster.add_manifest(
-            f'{NAMESPACE}-ns',
-            {
-                'apiVersion': 'v1',
-                'kind': 'Namespace',
-                'metadata': {
-                    'name': NAMESPACE
-                }
-            }
-        )
 
         service_account = cluster.add_service_account(
             'SparkBucketReadServiceAccount',
             name='spark-bucket-read-sa',
-            namespace=NAMESPACE,
+            namespace=data_stack_namespace.name,
         )
 
-        service_account.node.add_dependency(namespace_manifest)
+        service_account.node.add_dependency(data_stack_namespace.manifest)
 
         spark_bucket_read_policy = ManagedPolicy.from_managed_policy_arn(
             self,
@@ -1023,7 +1038,7 @@ class SparkBucketReadServiceAccount(Construct):
                 "kind": "SecretProviderClass",
                 "metadata": {
                     "name": "spark-aws-secrets",
-                    "namespace": NAMESPACE
+                    "namespace": data_stack_namespace.name
                 },
                 "spec": {
                     "provider": "aws",
@@ -1056,7 +1071,7 @@ class SparkBucketReadServiceAccount(Construct):
             }
         )
 
-        secrets_provider.node.add_dependency(namespace_manifest)
+        secrets_provider.node.add_dependency(data_stack_namespace.manifest)
 
         read_role = cluster.add_manifest(
             'spark-bucket-read-role',
@@ -1065,7 +1080,7 @@ class SparkBucketReadServiceAccount(Construct):
                 "kind": "Role",
                 "metadata": {
                     "name": "spark-bucket-read-role",
-                    "namespace": NAMESPACE
+                    "namespace": data_stack_namespace.name
                 },
                 "rules": [
                     {
@@ -1077,7 +1092,7 @@ class SparkBucketReadServiceAccount(Construct):
             }
         )
 
-        read_role.node.add_dependency(namespace_manifest)
+        read_role.node.add_dependency(data_stack_namespace.manifest)
 
         role_binding = cluster.add_manifest(
             'spark-bucket-read-rolebinding',
@@ -1086,7 +1101,7 @@ class SparkBucketReadServiceAccount(Construct):
                 "kind": "RoleBinding",
                 "metadata": {
                     "name": "spark-bucket-read-rolebinding",
-                    "namespace": NAMESPACE
+                    "namespace": data_stack_namespace.name
                 },
                 "roleRef": {
                     "apiGroup": "rbac.authorization.k8s.io",
@@ -1097,13 +1112,13 @@ class SparkBucketReadServiceAccount(Construct):
                     {
                         "kind": "ServiceAccount",
                         "name": "spark-bucket-read-sa",
-                        "namespace": NAMESPACE
+                        "namespace": data_stack_namespace.name
                     }
                 ]
             }
         )
 
-        role_binding.node.add_dependency(namespace_manifest)
+        role_binding.node.add_dependency(data_stack_namespace.manifest)
 
         airflow_static_webserver_secret = cluster.add_manifest(
             'AirflowStaticWebserverSecret',
@@ -1112,7 +1127,7 @@ class SparkBucketReadServiceAccount(Construct):
                 'kind': 'ExternalSecret',
                 'metadata': {
                     'name': 'airflow-static-webserver-secret-eso',
-                    'namespace': NAMESPACE
+                    'namespace': data_stack_namespace.name
                 },
                 'spec': {
                     'refreshInterval': "0",
@@ -1139,7 +1154,7 @@ class SparkBucketReadServiceAccount(Construct):
             }
         )
 
-        airflow_static_webserver_secret.node.add_dependency(namespace_manifest)
+        airflow_static_webserver_secret.node.add_dependency(data_stack_namespace.manifest)
         airflow_static_webserver_secret.node.add_dependency(external_secrets_operator.chart)
 
 
@@ -1151,16 +1166,15 @@ class AirflowLoggingServiceAccount(Construct):
         construct_id: str,
         *,
         cluster: Cluster,
+        data_stack_namespace: DataStackNamespace,
         **kwargs: Any
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        NAMESPACE = 'data-stack-dev'
-
         service_account = cluster.add_service_account(
             'AirflowLoggingServiceAccount',
             name='airflow-logging-sa',
-            namespace=NAMESPACE,
+            namespace=data_stack_namespace.name,
         )
 
         service_account.add_to_principal_policy(
@@ -1186,6 +1200,8 @@ class AirflowLoggingServiceAccount(Construct):
             )
         )
 
+        service_account.node.add_dependency(data_stack_namespace.manifest)
+
         # add kubernetes RBAC for using spark operator from this service account
         spark_role = cluster.add_manifest(
             'spark-operator-role',
@@ -1194,7 +1210,7 @@ class AirflowLoggingServiceAccount(Construct):
                 'kind': 'Role',
                 'metadata': {
                     'name': 'spark-operator-role',
-                    'namespace': NAMESPACE
+                    'namespace': data_stack_namespace.name
                 },
                 'rules': [
                     {
@@ -1214,6 +1230,8 @@ class AirflowLoggingServiceAccount(Construct):
                 ]
             }
         )
+
+        spark_role.node.add_dependency(data_stack_namespace.manifest)
         
         spark_role_binding = cluster.add_manifest(
             'spark-operator-rolebinding',
@@ -1222,13 +1240,13 @@ class AirflowLoggingServiceAccount(Construct):
                 'kind': 'RoleBinding',
                 'metadata': {
                     'name': 'spark-operator-rolebinding',
-                    'namespace': NAMESPACE
+                    'namespace': data_stack_namespace.name
                 },
                 'subjects': [
                     {
                         'kind': 'ServiceAccount',
                         'name': 'airflow-logging-sa',
-                        'namespace': NAMESPACE
+                        'namespace': data_stack_namespace.name
                     }
                 ],
                 'roleRef': {
@@ -1413,17 +1431,25 @@ class KubernetesStack(Stack):
             cluster=cluster,
         )
 
+        data_stack_namespace = DataStackNamespace(
+            self,
+            'DataStackNamespace',
+            cluster=cluster,
+        )
+
         spark_bucket_read_service_account = SparkBucketReadServiceAccount(
             self,
             'SparkBucketReadServiceAccount',
             cluster=cluster,
             external_secrets_operator=external_secrets_operator,
+            data_stack_namespace=data_stack_namespace,
         )
 
         airflow_logging_service_account = AirflowLoggingServiceAccount(
             self,
             'AirflowLoggingServiceAccount',
             cluster=cluster,
+            data_stack_namespace=data_stack_namespace,
         )
 
 
