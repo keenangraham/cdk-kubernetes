@@ -27,6 +27,12 @@ from aws_cdk.aws_eks import ServiceAccount
 from aws_cdk.aws_sqs import Queue
 
 from aws_cdk.aws_ec2 import InstanceType
+from aws_cdk.aws_ec2 import Vpc
+from aws_cdk.aws_ec2 import GatewayVpcEndpointOptions
+from aws_cdk.aws_ec2 import GatewayVpcEndpointAwsService
+from aws_cdk.aws_ec2 import SubnetConfiguration
+from aws_cdk.aws_ec2 import SubnetType
+from aws_cdk.aws_ec2 import SubnetSelection
 
 from aws_cdk.aws_route53 import HostedZone
 
@@ -775,10 +781,11 @@ class ClusterAutoscaler(Construct):
                 'subnetSelectorTerms': [
                     {
                         'tags': {
-                            'Name': f'{Stack.of(self).stack_name}/Cluster/{cluster.vpc.node.id}/PrivateSubnet*',
+                            'aws-cdk:subnet-type': 'Public',
                         },
                     },
                 ],
+                'associatePublicIPAddress': True,
                 'securityGroupSelectorTerms': [
                     {
                         'tags': {
@@ -1285,9 +1292,32 @@ class KubernetesStack(Stack):
             )
         )
 
+        vpc = Vpc(
+            self,
+            'K8sVpc',
+            nat_gateways=0,
+            subnet_configuration=[
+                SubnetConfiguration(
+                    name='Public',
+                    subnet_type=SubnetType.PUBLIC,
+                )
+            ],
+            gateway_endpoints={
+                'S3': GatewayVpcEndpointOptions(
+                    service=GatewayVpcEndpointAwsService.S3
+                )
+            }
+        )
+
         cluster = Cluster(
             self,
             'Cluster',
+            vpc=vpc,
+            vpc_subnets=[
+                SubnetSelection(
+                    subnet_type=SubnetType.PUBLIC
+                )
+            ],
             version=KubernetesVersion.V1_31,
             kubectl_layer=KubectlV31Layer(
                 self,
