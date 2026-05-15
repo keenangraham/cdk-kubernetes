@@ -268,6 +268,7 @@ class ExternalSecretsOperator(Construct):
             namespace=namespace,
             release='external-secrets',
             version='0.14.2',
+            wait=True,
         )
 
         self.chart.node.add_dependency(eso_namespace)
@@ -767,6 +768,7 @@ class ClusterAutoscaler(Construct):
             version='1.2.1',
             namespace='kube-system',
         )
+
         node_class = karpenter.add_ec2_node_class(
             'nodeclass',
             {
