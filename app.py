@@ -868,7 +868,7 @@ class ArgoCD(Construct):
             chart='argo-cd',
             release='argocd',
             repository='https://argoproj.github.io/argo-helm',
-            version='7.7.7',
+            version='9.5.14',
             namespace='argocd',
             values={
                 'configs': {
