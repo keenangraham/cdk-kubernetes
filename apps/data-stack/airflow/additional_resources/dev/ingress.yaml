@@ -11,6 +11,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: airflow-dev-webserver
+            name: airflow-dev-api-servers
             port:
               number: 8080
