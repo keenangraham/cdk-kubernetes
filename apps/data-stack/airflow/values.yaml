@@ -1789,7 +1789,9 @@ workers:
     labels: {}
 
     # Additional env variable configuration for pods created with pod-template-file
-    env: []
+    env:
+      - name: "abc"
+        value: "123"
 
     schedulerName: ~
 
