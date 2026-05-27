@@ -881,6 +881,8 @@ class ArgoCD(Construct):
             }
         )
 
+        chart.node.add_dependency(cluster.alb_controller)
+
         self.manifest = cluster.add_manifest(
             'argocd-ingress',
             {
