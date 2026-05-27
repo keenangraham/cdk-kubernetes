@@ -1144,7 +1144,7 @@ class SparkBucketReadServiceAccount(Construct):
                         'name': 'airflow-static-webserver-secret-generated',
                         'template': {
                             'data': {
-                                'webserver-secret-key': '{{ .password }}'
+                                'api-secret-key': '{{ .password  }}'
                             }
                         }
                     },
