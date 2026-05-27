@@ -9,7 +9,7 @@ import pendulum
 
 @dag(
     schedule=None,
-    start_date=pendulum.now('UTC').subtract(days=2)
+    start_date=pendulum.datetime(2026, 5, 25, tz="America/Los_Angeles")
 )
 def test_dag():
     @task.bash

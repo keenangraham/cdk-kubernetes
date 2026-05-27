@@ -20,7 +20,7 @@ with DAG(
     end_date=datetime(2025, 5, 5),
     default_args=default_args,
     description='A DAG to run Spark on Kubernetes',
-    schedule_interval=timedelta(days=1),
+    schedule=timedelta(days=1),
     max_active_runs=1,
     catchup=True,
 ) as dag:
