@@ -1130,7 +1130,7 @@ class SparkBucketReadServiceAccount(Construct):
         role_binding.node.add_dependency(data_stack_namespace.manifest)
 
         airflow_static_webserver_secret = cluster.add_manifest(
-            'AirflowStaticWebserverSecret',
+            'AirflowStaticWebserverSecret1',
             {
                 'apiVersion': 'external-secrets.io/v1beta1',
                 'kind': 'ExternalSecret',
