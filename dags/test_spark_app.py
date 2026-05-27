@@ -138,15 +138,15 @@ with DAG(
     catchup=False,
 ) as dag:
 
-
-    spark_task = SparkKubernetesOperator(
-        task_id='spark_task',
-        namespace='data-stack-dev',
-        template_spec=spark_app,
-        executor_config={
-            'KubernetesExecutor': {
-                'service_account_name': 'airflow-logging-sa',
-                'namespace': 'data-stack-dev'
-            }
-        }
-    )
+    pass
+    # #spark_task = SparkKubernetesOperator(
+    #     task_id='spark_task',
+    #     namespace='data-stack-dev',
+    #     template_spec=spark_app,
+    #     executor_config={
+    #         'KubernetesExecutor': {
+    #             'service_account_name': 'airflow-logging-sa',
+    #             'namespace': 'data-stack-dev'
+    #         }
+    #     }
+    #     )

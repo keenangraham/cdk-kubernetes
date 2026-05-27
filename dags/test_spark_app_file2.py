@@ -24,7 +24,7 @@ with DAG(
     max_active_runs=1,
     catchup=True,
 ) as dag:
-
+    pass
     # Use the application_file parameter to directly point to the YAML file
     # note that this is a relative path to the DAG file
     #spark_task = SparkKubernetesOperator(
