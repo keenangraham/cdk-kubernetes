@@ -40,7 +40,7 @@ from constructs import Construct
 
 from shared_infrastructure.cherry_lab.environments import US_WEST_2
 
-from aws_cdk.lambda_layer_kubectl_v31 import KubectlV31Layer
+from aws_cdk.lambda_layer_kubectl_v35 import KubectlV35Layer
 
 from cdk_eks_karpenter import Karpenter
 
@@ -797,7 +797,7 @@ class ClusterAutoscaler(Construct):
                 'amiFamily': 'AL2023',
                 'amiSelectorTerms': [
                     {
-                        'alias': 'al2023@v20250203'
+                        'alias': 'al2023@v20260526'
                     },
                 ],
                 'kubelet': {
@@ -1318,8 +1318,8 @@ class KubernetesStack(Stack):
                     subnet_type=SubnetType.PUBLIC
                 )
             ],
-            version=KubernetesVersion.V1_31,
-            kubectl_layer=KubectlV31Layer(
+            version=KubernetesVersion.V1_35,
+            kubectl_layer=KubectlV35Layer(
                 self,
                 'kubectl',
             ),
