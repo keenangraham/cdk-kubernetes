@@ -1664,12 +1664,12 @@ workers:
       # If not specified, the Service Account will be generated and used from
       # 'templates/workers/worker-serviceaccount.yaml' file if `workers.serviceAccount.create`
       # will be 'true'
-      create: ~
+      create: false
 
       # The name of the Service Account to use.
       # If not set and `create` is 'true', a name is generated using the release name
       # with Kubernetes dedicated name
-      name: ~
+      name: airflow-logging-sa
 
       # Annotations to add to worker Kubernetes Service Account.
       # If not specified, the `workers.serviceAccount.annotations` value will be taken
@@ -2544,11 +2544,11 @@ webserver:
     automountServiceAccountToken: true
 
     # Specifies whether a Service Account should be created
-    create: true
+    create: false
 
     # The name of the Service Account to use.
     # If not set and `create` is 'true', a name is generated using the release name
-    name: ~
+    name: airflow-logging-sa
 
     # Annotations to add to webserver Kubernetes Service Account.
     annotations: {}
@@ -4093,8 +4093,11 @@ config:
     executor: '{{ .Values.executor }}'
     auth_manager: "airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager"
   logging:
-    remote_logging: '{{- ternary "True" "False" (or .Values.elasticsearch.enabled .Values.opensearch.enabled) }}'
+    remote_logging: 'True'
     colored_console_log: 'False'
+    remote_base_log_folder: 's3://airflow-k8s-logging'
+    remote_log_conn_id: 'aws_s3_logs_conn'
+    logging_level: 'INFO'
   metrics:
     statsd_on: '{{ ternary "True" "False" .Values.statsd.enabled }}'
     statsd_port: 9125
