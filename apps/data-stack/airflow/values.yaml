@@ -566,7 +566,7 @@ apiSecretKey: ~
 apiSecretAnnotations: {}
 
 # If set, the secret must contain a key 'api-secret-key' with a base64-encoded key value
-apiSecretKeySecretName: "airflow-static-webserver-secret-generated"
+apiSecretKeySecretName: airflow-static-webserver-secret-generated
 # API secret key example:
 #  kind: Secret
 #  apiVersion: v1
