@@ -613,7 +613,7 @@ class CloudWatchObservability(Construct):
             'AmazonCloudwatchObservabilityCfnAddon',
             addon_name='amazon-cloudwatch-observability',
             cluster_name=cluster.cluster_name,
-            addon_version='v2.5.0-eksbuild.1',
+            addon_version='v6.1.0-eksbuild.1',
             resolve_conflicts='OVERWRITE',
         )
 
@@ -635,7 +635,7 @@ class VpcCni(Construct):
             'VpcCniCfnAddon',
             addon_name='vpc-cni',
             cluster_name=cluster.cluster_name,
-            addon_version='v1.19.2-eksbuild.1',
+            addon_version='v1.21.2-eksbuild.2',
             resolve_conflicts='OVERWRITE',
             configuration_values=json.dumps(
                 {
@@ -771,7 +771,7 @@ class ClusterAutoscaler(Construct):
             self,
             'Karpenter',
             cluster=cluster,
-            version='1.2.1',
+            version='1.12.1',
             namespace='kube-system',
         )
 
@@ -1487,7 +1487,7 @@ class KubernetesStack(Stack):
 
 KubernetesStack(
     app,
-    'KubernetesStack3',
+    'KubernetesStack135',
     env=US_WEST_2,
 )
 
