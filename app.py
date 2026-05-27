@@ -1135,7 +1135,7 @@ class SparkBucketReadServiceAccount(Construct):
                 'apiVersion': 'external-secrets.io/v1beta1',
                 'kind': 'ExternalSecret',
                 'metadata': {
-                    'name': 'airflow-static-webserver-secret-eso',
+                    'name': 'airflow-static-webserver-secret-eso1',
                     'namespace': data_stack_namespace.name
                 },
                 'spec': {
