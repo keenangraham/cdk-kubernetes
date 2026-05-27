@@ -134,7 +134,7 @@ with DAG(
     dag_id='test-spark-app',
     default_args=default_args,
     description='A DAG to run Spark on Kubernetes',
-    schedule_interval=timedelta(days=1),
+    schedule=timedelta(days=1),
     catchup=False,
 ) as dag:
 
