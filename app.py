@@ -22,6 +22,7 @@ from aws_cdk.aws_eks import CapacityType
 from aws_cdk.aws_eks import CfnAddon
 from aws_cdk.aws_eks import HelmChart
 from aws_cdk.aws_eks import KubernetesVersion
+from aws_cdk.aws_eks import NodegroupAmiType
 from aws_cdk.aws_eks import ServiceAccount
 
 from aws_cdk.aws_sqs import Queue
@@ -589,6 +590,7 @@ class CloudWatchObservability(Construct):
         construct_id: str,
         *,
         cluster: Cluster,
+        node_role: Role,
         **kwargs: Any
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -605,8 +607,8 @@ class CloudWatchObservability(Construct):
             managed_policy_arn='arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy',
         )
 
-        cluster.default_nodegroup.role.add_managed_policy(aws_xray_write_only_access)
-        cluster.default_nodegroup.role.add_managed_policy(cloudwatch_agent_server_policy)
+        node_role.add_managed_policy(aws_xray_write_only_access)
+        node_role.add_managed_policy(cloudwatch_agent_server_policy)
 
         amazon_cloudwatch_observability_cfn_addon = CfnAddon(
             self,
@@ -1327,26 +1329,24 @@ class KubernetesStack(Stack):
                 version=AlbControllerVersion.V2_8_2,
             ),
             masters_role=kubernetes_admin_role,
-            default_capacity=2,
+            default_capacity=0,
+        )
+
+        system_nodegroup = cluster.add_nodegroup_capacity(
+            'system-nodes',
+            min_size=1,
+            max_size=1,
+            desired_size=1,
+            ami_type=NodegroupAmiType.AL2023_X86_64_STANDARD,
+            instance_types=[
+                InstanceType('m5.large'),
+            ],
         )
 
         cluster_permissions = ClusterPermissions(
             self,
             'ClusterPermissions',
             cluster=cluster,
-        )
-
-        cluster.add_nodegroup_capacity(
-            'more-nodes',
-            min_size=0,
-            max_size=1,
-            desired_size=0,
-            disk_size=10,
-            capacity_type=CapacityType.SPOT,
-            instance_types=[
-                InstanceType('m5.large'),
-            ],
-            node_role=cluster.default_nodegroup.role,
         )
 
         Tags.of(
@@ -1401,7 +1401,8 @@ class KubernetesStack(Stack):
         cloudwatch_observability = CloudWatchObservability(
             self,
             'CloudwatchObservability',
-            cluster=cluster
+            cluster=cluster,
+            node_role=system_nodegroup.role,
         )
 
         vpc_cni = VpcCni(
