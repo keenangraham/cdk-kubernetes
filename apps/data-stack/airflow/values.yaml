@@ -2719,7 +2719,9 @@ webserver:
     securityContexts:
       container: {}
 
-  env: []
+  env:
+    - name: AIRFLOW_CONN_AWS_S3_LOGS_CONN
+      value: '{"conn_type": "aws", "extra": {"region_name": "us-west-2"}}'
 
 # Airflow Triggerer Config
 triggerer:
