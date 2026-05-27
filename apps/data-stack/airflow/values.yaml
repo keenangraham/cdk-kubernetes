@@ -370,7 +370,7 @@ rbac:
 # For Airflow <3.0, LocalKubernetesExecutor and CeleryKubernetesExecutor are supported.
 # Specify executors in a prioritized list to leverage multiple execution environments as needed:
 # https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/executor/index.html#using-multiple-executors-concurrently
-executor: "CeleryExecutor"
+executor: KubernetesExecutor
 
 # If this is true and using LocalExecutor/KubernetesExecutor/CeleryKubernetesExecutor, the scheduler's
 # Service Account will have access to communicate with the api-server and launch pods/jobs.
