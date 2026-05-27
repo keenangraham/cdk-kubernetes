@@ -784,7 +784,7 @@ workers:
     #   `workers.celery.serviceAccount.create` and/or
     #   `workers.kubernetes.serviceAccount.create`
     # instead)
-    create: true
+    create: false
 
     # The name of the Service Account to use.
     # If not set and `create` is 'true', a name is generated using the release name
@@ -792,8 +792,7 @@ workers:
     #   `workers.celery.serviceAccount.name` and/or
     #   `workers.kubernetes.serviceAccount.name`
     # instead)
-    name: ~
-
+    name: airflow-logging-sa
     # Annotations to add to worker Kubernetes Service Account.
     # (deprecated, use
     #   `workers.celery.serviceAccount.annotations` and/or
