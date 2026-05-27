@@ -1,21 +1,23 @@
 import datetime
 import logging
-from airflow.models import DAG
 from airflow.operators.bash import BashOperator
+from airflow.decorators import dag
+from airflow.decorators import task
 
-from airflow.utils.dates import days_ago
+import pendulum
 
-logging.info("Starting DAG")
-dag = DAG(
-    dag_id="test-dag",
-    default_args={"owner": "me", "retries": 3, "start_date": days_ago(2)},
-    schedule_interval=None,
-    dagrun_timeout=datetime.timedelta(minutes=60),
+
+@dag(
+    schedule=None,
+    start_date=pendulum.now('UTC').subtract(days=2)
 )
+def test_dag():
+    @task.bash
+    def run_after_loop():
+        return "echo hi && ls -l"
 
-logging.info("Creating BashOperator")
-run_this = BashOperator(task_id="run_after_loop", bash_command="echo hi && ls -l", dag=dag)
+    run_after_loop()
+
+test_dag()
 
 logging.warning("Running DAG")
-if __name__ == "__main__":
-    dag.cli()
