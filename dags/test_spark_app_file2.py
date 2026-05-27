@@ -27,8 +27,8 @@ with DAG(
 
     # Use the application_file parameter to directly point to the YAML file
     # note that this is a relative path to the DAG file
-    spark_task = SparkKubernetesOperator(
-        task_id='spark_task_from_file',
-        namespace='data-stack-dev',
-        application_file='spark-apps/test-spark-app.yaml',
-    )
+    #spark_task = SparkKubernetesOperator(
+    #    task_id='spark_task_from_file',
+    #    namespace='data-stack-dev',
+    #    application_file='spark-apps/test-spark-app.yaml',
+    #)
