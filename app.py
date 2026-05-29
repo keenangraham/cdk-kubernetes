@@ -775,9 +775,6 @@ class ClusterAutoscaler(Construct):
             cluster=cluster,
             version='1.12.1',
             namespace='kube-system',
-            helm_extra_values={
-                'replicas': 1,
-            },
         )
 
         node_class = karpenter.add_ec2_node_class(
