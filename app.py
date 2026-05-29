@@ -1339,9 +1339,9 @@ class KubernetesStack(Stack):
 
         system_nodegroup = cluster.add_nodegroup_capacity(
             'system-nodes',
-            min_size=1,
-            max_size=1,
-            desired_size=1,
+            min_size=2,
+            max_size=2,
+            desired_size=2,
             ami_type=NodegroupAmiType.AL2023_X86_64_STANDARD,
             instance_types=[
                 InstanceType('m5.large'),
@@ -1493,7 +1493,7 @@ class KubernetesStack(Stack):
 
 KubernetesStack(
     app,
-    'KubernetesStack135',
+    'KubernetesStack-1-35',
     env=US_WEST_2,
 )
 
