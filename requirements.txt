@@ -1,6 +1,6 @@
-aws-cdk-lib==2.171.1
-aws-cdk.aws-lambda-python-alpha==2.171.1a0
+aws-cdk-lib==2.257.0
+aws-cdk.aws-lambda-python-alpha==2.257.0a0
 constructs>=10.0.0,<11.0.0
 git+https://github.com/IGVF-DACC/shared-infrastructure@main#egg=shared_infrastructure
-aws-cdk.lambda-layer-kubectl-v31==2.0.0
-cdk-eks-karpenter==1.0.11
+aws-cdk.lambda-layer-kubectl-v35==2.2.2
+cdk-eks-karpenter==1.0.25

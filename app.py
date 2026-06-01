@@ -22,6 +22,7 @@ from aws_cdk.aws_eks import CapacityType
 from aws_cdk.aws_eks import CfnAddon
 from aws_cdk.aws_eks import HelmChart
 from aws_cdk.aws_eks import KubernetesVersion
+from aws_cdk.aws_eks import NodegroupAmiType
 from aws_cdk.aws_eks import ServiceAccount
 
 from aws_cdk.aws_sqs import Queue
@@ -40,7 +41,7 @@ from constructs import Construct
 
 from shared_infrastructure.cherry_lab.environments import US_WEST_2
 
-from aws_cdk.lambda_layer_kubectl_v31 import KubectlV31Layer
+from aws_cdk.lambda_layer_kubectl_v35 import KubectlV35Layer
 
 from cdk_eks_karpenter import Karpenter
 
@@ -589,6 +590,7 @@ class CloudWatchObservability(Construct):
         construct_id: str,
         *,
         cluster: Cluster,
+        node_role: Role,
         **kwargs: Any
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -605,15 +607,15 @@ class CloudWatchObservability(Construct):
             managed_policy_arn='arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy',
         )
 
-        cluster.default_nodegroup.role.add_managed_policy(aws_xray_write_only_access)
-        cluster.default_nodegroup.role.add_managed_policy(cloudwatch_agent_server_policy)
+        node_role.add_managed_policy(aws_xray_write_only_access)
+        node_role.add_managed_policy(cloudwatch_agent_server_policy)
 
         amazon_cloudwatch_observability_cfn_addon = CfnAddon(
             self,
             'AmazonCloudwatchObservabilityCfnAddon',
             addon_name='amazon-cloudwatch-observability',
             cluster_name=cluster.cluster_name,
-            addon_version='v2.5.0-eksbuild.1',
+            addon_version='v6.1.0-eksbuild.1',
             resolve_conflicts='OVERWRITE',
         )
 
@@ -635,7 +637,7 @@ class VpcCni(Construct):
             'VpcCniCfnAddon',
             addon_name='vpc-cni',
             cluster_name=cluster.cluster_name,
-            addon_version='v1.19.2-eksbuild.1',
+            addon_version='v1.21.2-eksbuild.2',
             resolve_conflicts='OVERWRITE',
             configuration_values=json.dumps(
                 {
@@ -771,8 +773,35 @@ class ClusterAutoscaler(Construct):
             self,
             'Karpenter',
             cluster=cluster,
-            version='1.2.1',
+            version='1.12.1',
             namespace='kube-system',
+        )
+
+        karpenter.add_managed_policy_to_karpenter_role(
+            ManagedPolicy(
+                self,
+                'KarpenterExtraPolicy',
+                statements=[
+                    PolicyStatement(
+                        effect=Effect.ALLOW,
+                        actions=['eks:DescribeCluster'],
+                        resources=[cluster.cluster_arn],
+                    ),
+                    PolicyStatement(
+                        effect=Effect.ALLOW,
+                        actions=[
+                            'iam:GetInstanceProfile',
+                            'iam:CreateInstanceProfile',
+                            'iam:AddRoleToInstanceProfile',
+                            'iam:RemoveRoleFromInstanceProfile',
+                            'iam:DeleteInstanceProfile',
+                            'iam:TagInstanceProfile',
+                            'iam:ListInstanceProfiles',
+                        ],
+                        resources=['*'],
+                    ),
+                ],
+            )
         )
 
         node_class = karpenter.add_ec2_node_class(
@@ -797,7 +826,7 @@ class ClusterAutoscaler(Construct):
                 'amiFamily': 'AL2023',
                 'amiSelectorTerms': [
                     {
-                        'alias': 'al2023@v20250203'
+                        'alias': 'al2023@v20260527'
                     },
                 ],
                 'kubelet': {
@@ -878,6 +907,8 @@ class ArgoCD(Construct):
                 }
             }
         )
+
+        chart.node.add_dependency(cluster.alb_controller)
 
         self.manifest = cluster.add_manifest(
             'argocd-ingress',
@@ -1318,8 +1349,8 @@ class KubernetesStack(Stack):
                     subnet_type=SubnetType.PUBLIC
                 )
             ],
-            version=KubernetesVersion.V1_31,
-            kubectl_layer=KubectlV31Layer(
+            version=KubernetesVersion.V1_35,
+            kubectl_layer=KubectlV35Layer(
                 self,
                 'kubectl',
             ),
@@ -1327,26 +1358,24 @@ class KubernetesStack(Stack):
                 version=AlbControllerVersion.V2_8_2,
             ),
             masters_role=kubernetes_admin_role,
-            default_capacity=2,
+            default_capacity=0,
+        )
+
+        system_nodegroup = cluster.add_nodegroup_capacity(
+            'system-nodes',
+            min_size=2,
+            max_size=2,
+            desired_size=2,
+            ami_type=NodegroupAmiType.AL2023_X86_64_STANDARD,
+            instance_types=[
+                InstanceType('m5.large'),
+            ],
         )
 
         cluster_permissions = ClusterPermissions(
             self,
             'ClusterPermissions',
             cluster=cluster,
-        )
-
-        cluster.add_nodegroup_capacity(
-            'more-nodes',
-            min_size=0,
-            max_size=1,
-            desired_size=0,
-            disk_size=10,
-            capacity_type=CapacityType.SPOT,
-            instance_types=[
-                InstanceType('m5.large'),
-            ],
-            node_role=cluster.default_nodegroup.role,
         )
 
         Tags.of(
@@ -1398,11 +1427,12 @@ class KubernetesStack(Stack):
             cluster=cluster,
         )
 
-        cloudwatch_observability = CloudWatchObservability(
-            self,
-            'CloudwatchObservability',
-            cluster=cluster
-        )
+        # cloudwatch_observability = CloudWatchObservability(
+        #     self,
+        #     'CloudwatchObservability',
+        #     cluster=cluster,
+        #     node_role=system_nodegroup.role,
+        # )
 
         vpc_cni = VpcCni(
             self,
@@ -1487,7 +1517,7 @@ class KubernetesStack(Stack):
 
 KubernetesStack(
     app,
-    'KubernetesStack3',
+    'KubernetesStack-1-35',
     env=US_WEST_2,
 )
 
