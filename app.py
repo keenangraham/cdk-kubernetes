@@ -799,7 +799,7 @@ class ClusterAutoscaler(Construct):
                 'amiFamily': 'AL2023',
                 'amiSelectorTerms': [
                     {
-                        'alias': 'al2023@v20260526'
+                        'alias': 'al2023@v20260527'
                     },
                 ],
                 'kubelet': {
