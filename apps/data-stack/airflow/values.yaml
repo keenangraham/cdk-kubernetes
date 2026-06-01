@@ -2275,7 +2275,9 @@ apiServer:
   allowPodLogReading: true
 
   # Environment variables for the Airflow API server.
-  env: []
+  env:
+    - name: AIRFLOW_CONN_AWS_S3_LOGS_CONN
+      value: '{"conn_type": "aws", "extra": {"region_name": "us-west-2"}}'
   # Example: To configure FORWARDED_ALLOW_IPS when running behind a reverse proxy:
   # env:
   #   - name: FORWARDED_ALLOW_IPS
@@ -2310,11 +2312,11 @@ apiServer:
     automountServiceAccountToken: true
 
     # Specifies whether a Service Account should be created
-    create: true
+    create: false
 
     # The name of the Service Account to use.
     # If not set and `create` is 'true', a name is generated using the release name
-    name: ~
+    name: airflow-logging-sa
 
     # Annotations to add to Airflow API server Kubernetes Service Account.
     annotations: {}
