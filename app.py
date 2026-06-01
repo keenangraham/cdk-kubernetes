@@ -876,7 +876,7 @@ class ClusterAutoscaler(Construct):
                     'nvidia.com/gpu': '2',
                 },
                 'disruption': {
-                    'consolidationPolicy': 'WhenUnderutilized',
+                    'consolidationPolicy': 'WhenEmptyOrUnderutilized',
                     'consolidateAfter': '1m',
                 },
             }
