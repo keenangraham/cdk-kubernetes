@@ -1400,12 +1400,12 @@ class KubernetesStack(Stack):
             cluster=cluster,
         )
 
-        cloudwatch_observability = CloudWatchObservability(
-            self,
-            'CloudwatchObservability',
-            cluster=cluster,
-            node_role=system_nodegroup.role,
-        )
+        # cloudwatch_observability = CloudWatchObservability(
+        #     self,
+        #     'CloudwatchObservability',
+        #     cluster=cluster,
+        #     node_role=system_nodegroup.role,
+        # )
 
         vpc_cni = VpcCni(
             self,
