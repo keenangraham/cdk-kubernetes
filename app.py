@@ -777,6 +777,32 @@ class ClusterAutoscaler(Construct):
             namespace='kube-system',
         )
 
+        karpenter.add_managed_policy_to_karpenter_role(
+            ManagedPolicy(
+                self,
+                'KarpenterExtraPolicy',
+                statements=[
+                    PolicyStatement(
+                        effect=Effect.ALLOW,
+                        actions=['eks:DescribeCluster'],
+                        resources=[cluster.cluster_arn],
+                    ),
+                    PolicyStatement(
+                        effect=Effect.ALLOW,
+                        actions=[
+                            'iam:GetInstanceProfile',
+                            'iam:CreateInstanceProfile',
+                            'iam:AddRoleToInstanceProfile',
+                            'iam:RemoveRoleFromInstanceProfile',
+                            'iam:DeleteInstanceProfile',
+                            'iam:TagInstanceProfile',
+                        ],
+                        resources=['*'],
+                    ),
+                ],
+            )
+        )
+
         node_class = karpenter.add_ec2_node_class(
             'nodeclass',
             {
