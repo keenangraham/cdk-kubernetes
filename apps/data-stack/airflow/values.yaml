@@ -380,7 +380,9 @@ allowPodLaunching: true
 allowJobLaunching: false
 
 # Environment variables for all Airflow containers
-env: []
+env:
+  - name: PYTHONUNBUFFERED
+    value: "1"
 # - name: ""
 #   value: ""
 
@@ -1791,6 +1793,8 @@ workers:
     env:
       - name: AIRFLOW_CONN_AWS_S3_LOGS_CONN
         value: '{"conn_type": "aws", "extra": {"region_name": "us-west-2"}}'
+      - name: PYTHONUNBUFFERED
+        value: "1"
 
     schedulerName: ~
 
