@@ -796,6 +796,7 @@ class ClusterAutoscaler(Construct):
                             'iam:RemoveRoleFromInstanceProfile',
                             'iam:DeleteInstanceProfile',
                             'iam:TagInstanceProfile',
+                            'iam:ListInstanceProfiles',
                         ],
                         resources=['*'],
                     ),
