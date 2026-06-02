@@ -2,7 +2,7 @@ from datetime import datetime
 from pendulum import timezone
 
 from airflow.sdk import dag
-from airflow.timetables.simple import CronDataIntervalTimetable
+from airflow.timetables.interval import CronDataIntervalTimetable
 
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 
