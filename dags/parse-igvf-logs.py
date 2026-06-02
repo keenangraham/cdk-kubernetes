@@ -7,7 +7,7 @@ from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKu
 
 
 @dag(
-    schedule='@daily',
+    schedule='0 10 * * *',
     start_date=datetime(2026, 5, 1, tzinfo=timezone("America/Los_Angeles")),
     catchup=False,
 )
