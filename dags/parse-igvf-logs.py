@@ -8,7 +8,7 @@ from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKu
 
 
 @dag(
-    timetable=CronDataIntervalTimetable(
+    schedule=CronDataIntervalTimetable(
         '0 10 * * *',
         timezone='America/Los_Angeles',
     ),
