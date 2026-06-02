@@ -15,7 +15,7 @@ def main():
     print("*****************")
     print('DATE IS:' + date)
     print("*****************")
-    df = spark.read.text(f's3a://igvf-public-logs/{date}/')
+    df = spark.read.text(f's3a://igvf-public-logs/{date}*')
     print('Number of logs', df.count())
 
     parsed_df = df.select(
