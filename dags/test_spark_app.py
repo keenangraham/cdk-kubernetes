@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from airflow import DAG
+from airflow.sdk import DAG
 
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 
@@ -10,7 +10,6 @@ default_args = {
     'depends_on_past': False,
     'start_date': datetime(2025, 2, 4),
     'retries': 1,
-    'schedule': None,
     'retry_delay': timedelta(minutes=5),
 }
 
