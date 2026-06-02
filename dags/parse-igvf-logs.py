@@ -1,4 +1,5 @@
 from datetime import datetime
+from pendulum import timezone
 
 from airflow.sdk import dag
 from airflow.sdk import task
@@ -8,7 +9,7 @@ from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKu
 
 @dag(
     schedule='@daily',
-    start_date=datetime(2026, 5, 1),
+    start_date=datetime(2026, 5, 1, tzinfo=timezone("America/Los_Angeles")),
     catchup=False,
 )
 def parse_igvf_logs():
