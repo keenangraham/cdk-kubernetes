@@ -7,7 +7,7 @@ spec:
   type: Python
   pythonVersion: "3"
   mode: cluster
-  image: public.ecr.aws/cherry-lab/cherry-lab:spark-4.1.2-s3
+  image: public.ecr.aws/cherry-lab/cherry-lab:spark-4.1.2-s3.1
   imagePullPolicy: IfNotPresent
   mainApplicationFile: https://raw.githubusercontent.com/keenangraham/cdk-kubernetes/refs/heads/main/spark/parse-igvf-logs.py
   sparkVersion: 4.1.2
