@@ -27,11 +27,12 @@ fullnameOverride: ""
 # -- Common labels to add to the resources.
 commonLabels: {}
 
+# Image used by the Spark operator.
 image:
   # -- Image registry.
-  registry: docker.io
+  registry: ghcr.io
   # -- Image repository.
-  repository: kubeflow/spark-operator
+  repository: kubeflow/spark-operator/controller
   # -- Image tag.
   # @default -- If not set, the chart appVersion will be used.
   tag: ""
@@ -41,9 +42,51 @@ image:
   pullSecrets: []
   # - name: <secret-name>
 
+# Helm hook configuration.
+hook:
+  # -- Whether to create a Helm pre-install/pre-upgrade hook Job to update CRDs.
+  upgradeCrd: false
+  # Image used by the Helm hook Job.
+  image:
+    # -- Image registry.
+    registry: ghcr.io
+    # -- Image repository.
+    repository: kubeflow/spark-operator/kubectl
+    # -- Image tag.
+    # @default -- If not set, the chart appVersion will be used.
+    tag: ""
+  # -- Node selector for the Helm hook Job.
+  nodeSelector: {}
+
+  # -- Affinity for the Helm hook Job.
+  affinity: {}
+
+  # -- List of node taints to tolerate for the Helm hook Job.
+  tolerations: []
+
 controller:
   # -- Number of replicas of controller.
-  replicas: 2
+  replicas: 1
+
+  # -- Feature gates to enable or disable specific features.
+  featureGates:
+  - name: PartialRestart
+    enabled: false
+  - name: LoadSparkDefaults
+    enabled: false
+
+  # -- The number of old history to retain to allow rollback.
+  revisionHistoryLimit: 10
+
+  leaderElection:
+    # -- Specifies whether to enable leader election for controller.
+    enable: true
+    # -- Leader election lease duration.
+    leaseDuration: 15s
+    # -- Leader election renew deadline.
+    renewDeadline: 10s
+    # -- Leader election retry period.
+    retryPeriod: 2s
 
   # -- Reconcile concurrency, higher values might increase memory usage.
   workers: 10
@@ -51,11 +94,24 @@ controller:
   # -- Configure the verbosity of logging, can be one of `debug`, `info`, `error`.
   logLevel: info
 
+  # -- Configure the encoder of logging, can be one of `console` or `json`.
+  logEncoder: console
+
   # -- Grace period after a successful spark-submit when driver pod not found errors will be retried. Useful if the driver pod can take some time to be created.
   driverPodCreationGracePeriod: 10s
 
   # -- Specifies the maximum number of Executor pods that can be tracked by the controller per SparkApplication.
   maxTrackedExecutorPerApp: 1000
+
+  # -- Timestamp precision for ScheduledSparkApplication run names.
+  # Valid values: nanos (default), micros, millis, seconds, minutes.
+  # Shorter precisions produce shorter names which helps with Kubernetes name length limits.
+  # NOTE: Using lower precisions such as "seconds" or "minutes" increases the risk of name
+  # collisions if multiple runs are created within the same time unit (for example during
+  # reconciliation loops or manual re-triggers). A collision will cause run creation to fail.
+  # Choose a precision compatible with your scheduling frequency: "minutes" is only suitable
+  # for jobs scheduled at most once per minute, "seconds" for jobs scheduled at most once per second.
+  scheduledSparkApplicationTimestampPrecision: nanos
 
   uiService:
     # -- Specifies whether to create service for Spark web UI.
@@ -70,6 +126,15 @@ controller:
     urlFormat: ""
     # -- Optionally set the ingressClassName.
     ingressClassName: ""
+    # -- Optionally set default TLS configuration for the Spark UI's ingress. `ingressTLS` in the SparkApplication spec overrides this.
+    tls: []
+    # - hosts:
+    #   - "*.example.com"
+    #   secretName: "example-secret"
+    # -- Optionally set default ingress annotations for the Spark UI's ingress. `ingressAnnotations` in the SparkApplication spec overrides this.
+    annotations: {}
+      # key1: value1
+      # key2: value2
 
   batchScheduler:
     # -- Specifies whether to enable batch scheduler for spark jobs scheduling.
@@ -114,7 +179,7 @@ controller:
   # Create a tmp directory to write Spark artifacts to for deployed Spark apps.
   - name: tmp
     emptyDir:
-      sizeLimit: 5Gi
+      sizeLimit: 1Gi
 
   # -- Node selector for controller pods.
   nodeSelector: {}
@@ -142,6 +207,11 @@ controller:
   # - maxSkew: 1
   #   topologyKey: kubernetes.io/hostname
   #   whenUnsatisfiable: DoNotSchedule
+
+  # -- Whether to use user namespace or not
+  # Kubernetes version 1.30 for feature beta (1.33 for GA) or higher is required with support from OS and OCI runtime
+  # ref: https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/
+  hostUsers: null
 
   # -- Environment variables for controller containers.
   env: []
@@ -177,6 +247,8 @@ controller:
     capabilities:
       drop:
       - ALL
+    seccompProfile:
+      type: RuntimeDefault
 
   # -- Sidecar containers for controller pods.
   sidecars: []
@@ -188,7 +260,7 @@ controller:
     enable: false
     # -- The number of pods that must be available.
     # Require `controller.replicas` to be greater than 1
-    minAvailable: 3
+    minAvailable: 1
 
   pprof:
     # -- Specifies whether to enable pprof.
@@ -216,10 +288,20 @@ webhook:
   enable: true
 
   # -- Number of replicas of webhook server.
-  replicas: 2
+  replicas: 1
+
+  # -- The number of old history to retain to allow rollback.
+  revisionHistoryLimit: 10
+
+  leaderElection:
+    # -- Specifies whether to enable leader election for webhook.
+    enable: true
 
   # -- Configure the verbosity of logging, can be one of `debug`, `info`, `error`.
   logLevel: info
+
+  # -- Configure the encoder of logging, can be one of `console` or `json`.
+  logEncoder: console
 
   # -- Specifies webhook port.
   port: 9443
@@ -301,6 +383,11 @@ webhook:
   #   topologyKey: kubernetes.io/hostname
   #   whenUnsatisfiable: DoNotSchedule
 
+  # -- Whether to use user namespace or not
+  # Kubernetes version 1.30 for feature beta (1.33 for GA) or higher is required with support from OS and OCI runtime
+  # ref: https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/
+  hostUsers: null
+
   # -- Environment variables for webhook containers.
   env: []
 
@@ -334,6 +421,8 @@ webhook:
     capabilities:
       drop:
       - ALL
+    seccompProfile:
+      type: RuntimeDefault
 
   # Pod disruption budget for webhook to avoid service degradation.
   podDisruptionBudget:
@@ -342,14 +431,22 @@ webhook:
     enable: false
     # -- The number of pods that must be available.
     # Require `webhook.replicas` to be greater than 1
-    minAvailable: 3
+    minAvailable: 1
 
 spark:
   # -- List of namespaces where to run spark jobs.
   # If empty string is included, all namespaces will be allowed.
+  # Namespaces specified here will be watched in addition to those matching jobNamespaceSelector.
   # Make sure the namespaces have already existed.
   jobNamespaces:
   - data-stack-dev
+
+  # -- Label selector to filter namespaces to watch.
+  # Supports standard Kubernetes label selector syntax (e.g., 'spark-operator=enabled,env in (prod,staging)').
+  # Namespaces matching this selector will be watched in addition to those in jobNamespaces.
+  # When specified, requires ClusterRole permission to list and watch namespaces.
+  # Leave empty to disable namespace selector functionality.
+  jobNamespaceSelector: ""
 
   serviceAccount:
     # -- Specifies whether to create a service account for spark applications.
@@ -379,6 +476,11 @@ prometheus:
     endpoint: /metrics
     # -- Metrics prefix, will be added to all exported metrics.
     prefix: ""
+    # -- Job Start Latency histogram buckets. Specified in seconds.
+    jobStartLatencyBuckets: "30,60,90,120,150,180,210,240,270,300"
+    # -- Labels to be added to the Spark Operator standard metrics, e.g., "label1Key,label2Key".
+    # Defaults to 'app_type' if not set.
+    labels: ""
 
   # Prometheus pod monitor for controller pods
   podMonitor:
@@ -393,4 +495,23 @@ prometheus:
     podMetricsEndpoint:
       scheme: http
       interval: 5s
+
+certManager:
+  # -- Specifies whether to use [cert-manager](https://cert-manager.io) to generate certificate for webhook.
+  # `webhook.enable` must be set to `true` to enable cert-manager.
+  enable: false
+  # -- The reference to the issuer.
+  # @default -- A self-signed issuer will be created and used if not specified.
+  issuerRef: {}
+    # group: cert-manager.io
+    # kind: ClusterIssuer
+    # name: selfsigned
+  # -- The duration of the certificate validity (e.g. `2160h`).
+  # See [cert-manager.io/v1.Certificate](https://cert-manager.io/docs/reference/api-docs/#cert-manager.io/v1.Certificate).
+  # @default -- `2160h` (90 days) will be used if not specified.
+  duration: ""
+  # -- The duration before the certificate expiration to renew the certificate (e.g. `720h`).
+  # See [cert-manager.io/v1.Certificate](https://cert-manager.io/docs/reference/api-docs/#cert-manager.io/v1.Certificate).
+  # @default -- 1/3 of issued certificate’s lifetime.
+  renewBefore: ""
 
