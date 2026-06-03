@@ -877,7 +877,7 @@ class ClusterAutoscaler(Construct):
                 },
                 'disruption': {
                     'consolidationPolicy': 'WhenEmptyOrUnderutilized',
-                    'consolidateAfter': '1m',
+                    'consolidateAfter': '2m',
                 },
             }
         )
