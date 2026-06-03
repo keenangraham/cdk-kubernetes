@@ -14,7 +14,7 @@ spec:
   driver:
     labels: 
       app.kubernetes.io/name: "parse-igvf-logs"
-    coreRequest: "2000m"
+    coreRequest: "1000m"
     memory: "2048M"
     serviceAccount: spark-bucket-read-sa
     env:
@@ -41,8 +41,9 @@ spec:
         volumeAttributes:
           secretProviderClass: "spark-aws-secrets"
   executor:
-    coreRequest: "1000m"
-    memory: "2048M"
+    cores: 1
+    coreRequest: "500m"
+    memory: "1024M"
     serviceAccount: spark-bucket-read-sa
     env:
       - name: AWS_ACCESS_KEY_ID
@@ -67,8 +68,8 @@ spec:
           secretProviderClass: "spark-aws-secrets"
   dynamicAllocation:
     enabled: true
-    initialExecutors: 1
-    maxExecutors: 2
+    initialExecutors: 2
+    maxExecutors: 4
     minExecutors: 1
   sparkConf:
     "spark.hadoop.fs.s3a.bucket.igvf-public-logs.aws.credentials.provider": "com.amazonaws.auth.EnvironmentVariableCredentialsProvider"
