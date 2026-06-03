@@ -73,8 +73,8 @@ spec:
     maxExecutors: 4
     minExecutors: 1
   sparkConf:
-    "spark.hadoop.fs.s3a.bucket.igvf-public-logs.aws.credentials.provider": "com.amazonaws.auth.EnvironmentVariableCredentialsProvider"
-    "spark.hadoop.fs.s3a.bucket.igvf-parsed-logs.aws.credentials.provider": "com.amazonaws.auth.EnvironmentVariableCredentialsProvider"
+    "spark.hadoop.fs.s3a.bucket.igvf-public-logs.aws.credentials.provider": "org.apache.hadoop.fs.s3a.auth.EnvironmentVariableCredentialsProvider"
+    "spark.hadoop.fs.s3a.bucket.igvf-parsed-logs.aws.credentials.provider": "org.apache.hadoop.fs.s3a.auth.EnvironmentVariableCredentialsProvider"
     "log4j.logger.org.apache.hadoop.fs.s3a": "DEBUG"
-    "log4j.logger.com.amazonaws": "DEBUG"
-    "log4j.logger.com.amazonaws.internal": "DEBUG"
+    "log4j.logger.software.amazon.awssdk": "DEBUG"
+    "log4j.logger.software.amazon.awssdk.core.internal": "DEBUG"
