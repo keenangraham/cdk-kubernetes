@@ -877,7 +877,7 @@ class ClusterAutoscaler(Construct):
                 },
                 'disruption': {
                     'consolidationPolicy': 'WhenEmptyOrUnderutilized',
-                    'consolidateAfter': '5m',
+                    'consolidateAfter': '1m',
                 },
             }
         )
@@ -1237,6 +1237,90 @@ class SparkBucketReadServiceAccount(Construct):
 
         airflow_jwt_secret.node.add_dependency(data_stack_namespace.manifest)
         airflow_jwt_secret.node.add_dependency(external_secrets_operator.chart)
+
+        airflow_fernet_key_sa = cluster.add_service_account(
+            'AirflowFernetKeyServiceAccount',
+            name='airflow-fernet-key-sa',
+            namespace=data_stack_namespace.name,
+        )
+
+        airflow_fernet_key_sa.add_to_principal_policy(
+            PolicyStatement(
+                effect=Effect.ALLOW,
+                actions=[
+                    'secretsmanager:GetSecretValue',
+                    'secretsmanager:DescribeSecret',
+                ],
+                resources=[
+                    'arn:aws:secretsmanager:us-west-2:618537831167:secret:test/airflow/fernet_key-zhNNuJ',
+                ],
+            )
+        )
+
+        airflow_fernet_key_sa.node.add_dependency(data_stack_namespace.manifest)
+
+        airflow_fernet_key_store = cluster.add_manifest(
+            'AirflowFernetKeySecretStore',
+            {
+                'apiVersion': 'external-secrets.io/v1beta1',
+                'kind': 'SecretStore',
+                'metadata': {
+                    'name': 'airflow-fernet-key-store',
+                    'namespace': data_stack_namespace.name,
+                },
+                'spec': {
+                    'provider': {
+                        'aws': {
+                            'service': 'SecretsManager',
+                            'region': 'us-west-2',
+                            'auth': {
+                                'jwt': {
+                                    'serviceAccountRef': {
+                                        'name': 'airflow-fernet-key-sa',
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        )
+
+        airflow_fernet_key_store.node.add_dependency(airflow_fernet_key_sa)
+
+        airflow_fernet_key_secret = cluster.add_manifest(
+            'AirflowFernetKeySecret',
+            {
+                'apiVersion': 'external-secrets.io/v1beta1',
+                'kind': 'ExternalSecret',
+                'metadata': {
+                    'name': 'airflow-fernet-key-eso',
+                    'namespace': data_stack_namespace.name,
+                },
+                'spec': {
+                    'refreshInterval': '0',
+                    'secretStoreRef': {
+                        'name': 'airflow-fernet-key-store',
+                        'kind': 'SecretStore',
+                    },
+                    'target': {
+                        'name': 'airflow-fernet-key',
+                    },
+                    'data': [
+                        {
+                            'secretKey': 'fernet-key',
+                            'remoteRef': {
+                                'key': 'test/airflow/fernet_key',
+                                'property': 'fernet_key',
+                            }
+                        }
+                    ]
+                }
+            }
+        )
+
+        airflow_fernet_key_secret.node.add_dependency(data_stack_namespace.manifest)
+        airflow_fernet_key_secret.node.add_dependency(airflow_fernet_key_store)
 
 
 class AirflowLoggingServiceAccount(Construct):

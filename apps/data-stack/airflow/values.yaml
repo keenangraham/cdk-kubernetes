@@ -548,7 +548,7 @@ data:
 fernetKey: ~
 
 # If set, the secret must contain a 'fernet-key' key with a base64-encoded key value
-fernetKeySecretName: ~
+fernetKeySecretName: airflow-fernet-key
 # Fernet key secret example:
 #  kind: Secret
 #  apiVersion: v1
