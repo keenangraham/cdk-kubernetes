@@ -15,7 +15,7 @@ spec:
   driver:
     labels: 
       app.kubernetes.io/name: "parse-igvf-logs"
-    coreRequest: "2000m"
+    coreRequest: "1000m"
     memory: "4096M"
     serviceAccount: spark-bucket-read-sa
     env:
@@ -42,7 +42,8 @@ spec:
         volumeAttributes:
           secretProviderClass: "spark-aws-secrets"
   executor:
-    coreRequest: "1000m"
+    cores: 1
+    coreRequest: "500m"
     memory: "2048M"
     serviceAccount: spark-bucket-read-sa
     env:
