@@ -2260,7 +2260,7 @@ apiServer:
 
   # Number of Airflow API servers in the Deployment.
   # Omitted from the Deployment, when HPA is enabled.
-  replicas: 1
+  replicas: 2
 
   # Max number of old ReplicaSets to retain
   revisionHistoryLimit: ~
@@ -2448,16 +2448,16 @@ apiServer:
 
   livenessProbe:
     initialDelaySeconds: 15
-    timeoutSeconds: 5
+    timeoutSeconds: 30
     failureThreshold: 5
-    periodSeconds: 10
+    periodSeconds: 30
     scheme: HTTP
 
   readinessProbe:
     initialDelaySeconds: 15
-    timeoutSeconds: 5
+    timeoutSeconds: 30
     failureThreshold: 5
-    periodSeconds: 10
+    periodSeconds: 30
     scheme: HTTP
 
   startupProbe:
