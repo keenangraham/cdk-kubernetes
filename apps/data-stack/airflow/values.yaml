@@ -587,7 +587,7 @@ jwtSecret: ~
 jwtSecretAnnotations: {}
 
 # If set, the secret must contain a key 'jwt-secret' with a base64-encoded key value
-jwtSecretName: ~
+jwtSecretName: airflow-jwt-secret
 # JWT secret example:
 #  kind: Secret
 #  apiVersion: v1

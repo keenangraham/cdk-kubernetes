@@ -1201,6 +1201,43 @@ class SparkBucketReadServiceAccount(Construct):
         airflow_static_webserver_secret.node.add_dependency(data_stack_namespace.manifest)
         airflow_static_webserver_secret.node.add_dependency(external_secrets_operator.chart)
 
+        airflow_jwt_secret = cluster.add_manifest(
+            'AirflowJwtSecret',
+            {
+                'apiVersion': 'external-secrets.io/v1beta1',
+                'kind': 'ExternalSecret',
+                'metadata': {
+                    'name': 'airflow-jwt-secret-eso',
+                    'namespace': data_stack_namespace.name
+                },
+                'spec': {
+                    'refreshInterval': "0",
+                    'target': {
+                        'name': 'airflow-jwt-secret',
+                        'template': {
+                            'data': {
+                                'jwt-secret': '{{ .password  }}'
+                            }
+                        }
+                    },
+                    'dataFrom': [
+                        {
+                            'sourceRef': {
+                                'generatorRef': {
+                                    'apiVersion': 'generators.external-secrets.io/v1alpha1',
+                                    'kind': 'ClusterGenerator',
+                                    'name': 'password-generator',
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        )
+
+        airflow_jwt_secret.node.add_dependency(data_stack_namespace.manifest)
+        airflow_jwt_secret.node.add_dependency(external_secrets_operator.chart)
+
 
 class AirflowLoggingServiceAccount(Construct):
 

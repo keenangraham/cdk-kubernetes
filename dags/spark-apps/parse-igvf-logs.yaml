@@ -11,7 +11,7 @@ spec:
   imagePullPolicy: IfNotPresent
   mainApplicationFile: https://raw.githubusercontent.com/keenangraham/cdk-kubernetes/refs/heads/main/spark/parse-igvf-logs.py
   sparkVersion: 3.5.3
-  timeToLiveSeconds: 90
+  timeToLiveSeconds: 120
   driver:
     labels: 
       app.kubernetes.io/name: "parse-igvf-logs"
