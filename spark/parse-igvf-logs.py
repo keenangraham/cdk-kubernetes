@@ -16,7 +16,6 @@ def main():
     print('DATE IS:' + date)
     print("*****************")
     df = spark.read.text(f's3a://igvf-public-logs/{date}*')
-    print('Number of logs', df.count())
 
     parsed_df = df.select(
         regexp_extract(col('value'), log_regex_pattern, 1).alias('bucket_owner'),

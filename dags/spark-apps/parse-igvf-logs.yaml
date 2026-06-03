@@ -69,10 +69,10 @@ spec:
           secretProviderClass: "spark-aws-secrets"
   dynamicAllocation:
     enabled: true
-    initialExecutors: 1
-    maxExecutors: 4
+    initialExecutors: 2
+    maxExecutors: 10
     minExecutors: 1
   sparkConf:
-    "log4j.logger.org.apache.hadoop.fs.s3a": "DEBUG"
-    "log4j.logger.software.amazon.awssdk": "DEBUG"
-    "log4j.logger.software.amazon.awssdk.core.internal": "DEBUG"
+    "spark.hadoop.fs.s3a.connection.maximum": "100"
+    "spark.hadoop.fs.s3a.fast.upload": "true"
+    "spark.hadoop.fs.s3a.multipart.size": "67108864"
