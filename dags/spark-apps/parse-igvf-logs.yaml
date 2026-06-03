@@ -7,10 +7,10 @@ spec:
   type: Python
   pythonVersion: "3"
   mode: cluster
-  image: ojolanki/spark-s3:3.5.3-boto3 
+  image: public.ecr.aws/cherry-lab/cherry-lab:spark-4.1.2-s3
   imagePullPolicy: IfNotPresent
   mainApplicationFile: https://raw.githubusercontent.com/keenangraham/cdk-kubernetes/refs/heads/main/spark/parse-igvf-logs.py
-  sparkVersion: 3.5.3
+  sparkVersion: 4.1.2
   timeToLiveSeconds: 600
   driver:
     labels: 
