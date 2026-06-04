@@ -1,6 +1,11 @@
 supersetNode:
   replicaCount: 1
 
+bootstrapScript: |
+  #!/bin/bash
+  uv pip install .[postgres] &&\
+  if [ ! -f ~/bootstrap ]; then echo "Running Superset with uid {{ .Values.runAsUser }}" > ~/bootstrap; fi
+
 configOverrides:
   secret: |
     SECRET_KEY = os.environ.get('SECRET_KEY')
