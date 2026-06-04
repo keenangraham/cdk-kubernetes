@@ -14,9 +14,8 @@ configOverrides:
         "ENABLE_TEMPLATE_PROCESSING": True,
     }
 
-extraEnvFrom: |
-  - secretRef:
-      name: superset-secret-key
+envFromSecrets:
+  - superset-secret-key
 
 init:
   adminUser:
