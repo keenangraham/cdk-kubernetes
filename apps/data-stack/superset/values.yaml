@@ -36,7 +36,7 @@ extraConfigs:
   import_datasources.yaml: |
     databases:
     - database_name: igvf-parsed-logs
-      sqlalchemy_uri: duckdb:///:memory:
+      sqlalchemy_uri: "duckdb:///:memory:"
       extra: "{\"engine_params\": {\"connect_args\": {\"preload_extensions\": [\"httpfs\"], \"config\": {\"s3_region\": \"us-west-2\"}}}}"
       allow_ctas: false
       allow_cvas: false
