@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: superset-ui-dev
+spec:
+  rules:
+  - host: superset.api.encodedcc.org
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: superset-dev
+            port:
+              number: 8088

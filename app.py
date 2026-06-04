@@ -1323,6 +1323,58 @@ class SparkBucketReadServiceAccount(Construct):
         airflow_fernet_key_secret.node.add_dependency(airflow_fernet_key_store)
 
 
+class SupersetSecrets(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        external_secrets_operator: ExternalSecretsOperator,
+        data_stack_namespace: DataStackNamespace,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        secret = cluster.add_manifest(
+            'SupersetSecretKey',
+            {
+                'apiVersion': 'external-secrets.io/v1beta1',
+                'kind': 'ExternalSecret',
+                'metadata': {
+                    'name': 'superset-secret-key-eso',
+                    'namespace': data_stack_namespace.name,
+                },
+                'spec': {
+                    'refreshInterval': '0',
+                    'target': {
+                        'name': 'superset-secret-key',
+                        'template': {
+                            'data': {
+                                'SECRET_KEY': '{{ .password }}'
+                            }
+                        }
+                    },
+                    'dataFrom': [
+                        {
+                            'sourceRef': {
+                                'generatorRef': {
+                                    'apiVersion': 'generators.external-secrets.io/v1alpha1',
+                                    'kind': 'ClusterGenerator',
+                                    'name': 'password-generator',
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        )
+
+        secret.node.add_dependency(data_stack_namespace.manifest)
+        secret.node.add_dependency(external_secrets_operator.chart)
+
+
 class AirflowLoggingServiceAccount(Construct):
 
     def __init__(
@@ -1636,6 +1688,14 @@ class KubernetesStack(Stack):
             self,
             'AirflowLoggingServiceAccount',
             cluster=cluster,
+            data_stack_namespace=data_stack_namespace,
+        )
+
+        superset_secrets = SupersetSecrets(
+            self,
+            'SupersetSecrets',
+            cluster=cluster,
+            external_secrets_operator=external_secrets_operator,
             data_stack_namespace=data_stack_namespace,
         )
 

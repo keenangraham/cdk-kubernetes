@@ -1,0 +1,32 @@
+supersetNode:
+  replicaCount: 1
+
+configOverrides:
+  secret: |
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+  feature_flags: |
+    FEATURE_FLAGS = {
+        "ENABLE_TEMPLATE_PROCESSING": True,
+    }
+
+extraEnvFrom: |
+  - secretRef:
+      name: superset-secret-key
+
+init:
+  adminUser:
+    username: admin
+    firstname: Admin
+    lastname: User
+    email: admin@encodedcc.org
+    password: changeme
+
+postgresql:
+  enabled: true
+  auth:
+    username: superset
+    password: superset
+    database: superset
+
+redis:
+  enabled: true
