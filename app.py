@@ -1374,6 +1374,76 @@ class SupersetSecrets(Construct):
         secret.node.add_dependency(data_stack_namespace.manifest)
         secret.node.add_dependency(external_secrets_operator.chart)
 
+        aws_credentials_store = cluster.add_manifest(
+            'SupersetAwsCredentialsStore',
+            {
+                'apiVersion': 'external-secrets.io/v1beta1',
+                'kind': 'SecretStore',
+                'metadata': {
+                    'name': 'superset-aws-credentials-store',
+                    'namespace': data_stack_namespace.name,
+                },
+                'spec': {
+                    'provider': {
+                        'aws': {
+                            'service': 'SecretsManager',
+                            'region': 'us-west-2',
+                            'auth': {
+                                'jwt': {
+                                    'serviceAccountRef': {
+                                        'name': 'spark-bucket-read-sa',
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        )
+
+        aws_credentials_store.node.add_dependency(data_stack_namespace.manifest)
+
+        aws_credentials_secret = cluster.add_manifest(
+            'SupersetAwsCredentials',
+            {
+                'apiVersion': 'external-secrets.io/v1beta1',
+                'kind': 'ExternalSecret',
+                'metadata': {
+                    'name': 'superset-aws-credentials-eso',
+                    'namespace': data_stack_namespace.name,
+                },
+                'spec': {
+                    'refreshInterval': '0',
+                    'secretStoreRef': {
+                        'name': 'superset-aws-credentials-store',
+                        'kind': 'SecretStore',
+                    },
+                    'target': {
+                        'name': 'superset-aws-credentials',
+                    },
+                    'data': [
+                        {
+                            'secretKey': 'AWS_ACCESS_KEY_ID',
+                            'remoteRef': {
+                                'key': 'test/spark/read-cross-acccount-bucket',
+                                'property': 'ACCESS_KEY',
+                            }
+                        },
+                        {
+                            'secretKey': 'AWS_SECRET_ACCESS_KEY',
+                            'remoteRef': {
+                                'key': 'test/spark/read-cross-acccount-bucket',
+                                'property': 'SECRET_ACCESS_KEY',
+                            }
+                        },
+                    ]
+                }
+            }
+        )
+
+        aws_credentials_secret.node.add_dependency(data_stack_namespace.manifest)
+        aws_credentials_secret.node.add_dependency(aws_credentials_store)
+
 
 class AirflowLoggingServiceAccount(Construct):
 
