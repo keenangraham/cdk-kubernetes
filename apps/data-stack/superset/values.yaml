@@ -1,9 +1,14 @@
+image:
+  repository: apache/superset
+
+serviceAccountName: spark-bucket-read-sa
+
 supersetNode:
   replicaCount: 1
 
 bootstrapScript: |
   #!/bin/bash
-  uv pip install .[postgres] &&\
+  uv pip install .[postgres] duckdb-engine &&\
   if [ ! -f ~/bootstrap ]; then echo "Running Superset with uid {{ .Values.runAsUser }}" > ~/bootstrap; fi
 
 configOverrides:
@@ -17,6 +22,31 @@ configOverrides:
 envFromSecrets:
   - superset-secret-key
 
+extraEnv: |
+  - name: AWS_ACCESS_KEY_ID
+    valueFrom:
+      secretKeyRef:
+        name: aws-spark-access-key
+        key: ACCESS_KEY
+  - name: AWS_SECRET_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: aws-spark-secret-access-key
+        key: SECRET_ACCESS_KEY
+
+extraVolumes: |
+  - name: aws-creds
+    csi:
+      driver: secrets-store.csi.k8s.io
+      readOnly: true
+      volumeAttributes:
+        secretProviderClass: "spark-aws-secrets"
+
+extraVolumeMounts: |
+  - name: aws-creds
+    mountPath: /tmp/.aws-creds
+    readOnly: true
+
 init:
   adminUser:
     username: admin
@@ -24,6 +54,17 @@ init:
     lastname: User
     email: admin@encodedcc.org
     password: changeme
+
+extraConfigs:
+  import_datasources.yaml: |
+    databases:
+    - database_name: igvf-parsed-logs
+      sqlalchemy_uri: duckdb:///:memory:
+      extra: "{\"engine_params\": {\"connect_args\": {\"preload_extensions\": [\"httpfs\"], \"config\": {\"s3_region\": \"us-west-2\"}}}}"
+      allow_ctas: false
+      allow_cvas: false
+      allow_file_upload: false
+      tables: []
 
 postgresql:
   enabled: true
