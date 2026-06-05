@@ -1,3 +1,6 @@
+nameOverride: coder-db
+fullnameOverride: coder-db
+
 auth:
   username: coder
   database: coder
