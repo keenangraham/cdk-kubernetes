@@ -1445,6 +1445,59 @@ class SupersetSecrets(Construct):
         aws_credentials_secret.node.add_dependency(aws_credentials_store)
 
 
+class CoderSecrets(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        external_secrets_operator: ExternalSecretsOperator,
+        data_stack_namespace: DataStackNamespace,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        db_secret = cluster.add_manifest(
+            'CoderDbSecret',
+            {
+                'apiVersion': 'external-secrets.io/v1beta1',
+                'kind': 'ExternalSecret',
+                'metadata': {
+                    'name': 'coder-db-secret-eso',
+                    'namespace': data_stack_namespace.name,
+                },
+                'spec': {
+                    'refreshInterval': '0',
+                    'target': {
+                        'name': 'coder-db-url',
+                        'template': {
+                            'data': {
+                                'password': '{{ .password }}',
+                                'url': 'postgresql://coder:{{ .password }}@coder-db-dev-postgresql:5432/coder?sslmode=disable',
+                            }
+                        }
+                    },
+                    'dataFrom': [
+                        {
+                            'sourceRef': {
+                                'generatorRef': {
+                                    'apiVersion': 'generators.external-secrets.io/v1alpha1',
+                                    'kind': 'ClusterGenerator',
+                                    'name': 'password-generator',
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        )
+
+        db_secret.node.add_dependency(data_stack_namespace.manifest)
+        db_secret.node.add_dependency(external_secrets_operator.chart)
+
+
 class AirflowLoggingServiceAccount(Construct):
 
     def __init__(
@@ -1764,6 +1817,14 @@ class KubernetesStack(Stack):
         superset_secrets = SupersetSecrets(
             self,
             'SupersetSecrets',
+            cluster=cluster,
+            external_secrets_operator=external_secrets_operator,
+            data_stack_namespace=data_stack_namespace,
+        )
+
+        coder_secrets = CoderSecrets(
+            self,
+            'CoderSecrets',
             cluster=cluster,
             external_secrets_operator=external_secrets_operator,
             data_stack_namespace=data_stack_namespace,

@@ -1,0 +1,7 @@
+auth:
+  username: coder
+  database: coder
+  existingSecret: coder-db-url
+  secretKeys:
+    adminPasswordKey: password
+    userPasswordKey: password

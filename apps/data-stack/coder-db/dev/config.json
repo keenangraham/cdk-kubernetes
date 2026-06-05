@@ -1,0 +1,8 @@
+{
+    "env": "dev",
+    "chart": "postgresql",
+    "repoURL": "https://charts.bitnami.com/bitnami",
+    "targetRevision": "16.4.5",
+    "valuesRepoURL": "https://github.com/keenangraham/cdk-kubernetes",
+    "valuesFile": "apps/data-stack/coder-db/values.yaml"
+}
