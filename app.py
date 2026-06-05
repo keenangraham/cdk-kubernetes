@@ -1475,7 +1475,7 @@ class CoderSecrets(Construct):
                         'template': {
                             'data': {
                                 'password': '{{ .password }}',
-                                'url': 'postgresql://coder:{{ .password }}@coder-db:5432/coder?sslmode=disable',
+                                'url': 'postgresql://coder:{{ .password }}@coder-postgres:5432/coder?sslmode=disable',
                             }
                         }
                     },

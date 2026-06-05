@@ -1,5 +1,4 @@
-nameOverride: coder-db
-fullnameOverride: coder-db
+fullnameOverride: coder-postgres
 
 auth:
   username: coder
