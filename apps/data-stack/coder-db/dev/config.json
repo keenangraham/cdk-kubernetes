@@ -4,5 +4,6 @@
     "repoURL": "https://charts.bitnami.com/bitnami",
     "targetRevision": "16.4.5",
     "valuesRepoURL": "https://github.com/keenangraham/cdk-kubernetes",
-    "valuesFile": "apps/data-stack/coder-db/values.yaml"
+    "valuesFile": "apps/data-stack/coder-db/values.yaml",
+    "additionalResources": "apps/data-stack/coder-db/additional_resources/dev"
 }
