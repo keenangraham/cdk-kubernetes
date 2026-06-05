@@ -9,3 +9,7 @@ coder:
       value: "https://coder.api.encodedcc.org"
   service:
     type: ClusterIP
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
