@@ -27,6 +27,7 @@ def load_igvf_logs_to_clickhouse():
         image='python:3.12-slim',
         cmds=['bash', '-c'],
         arguments=[
+            f'apt-get update -qq && apt-get install -y -q curl && '
             f'pip install -q clickhouse-connect && '
             f'curl -fsSL {_SCRIPT_URL} | python - {{{{ ds }}}}'
         ],

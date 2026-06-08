@@ -44,8 +44,10 @@ client.command('''
     ORDER BY (date, request_id)
 ''')
 
+print(f'[{date}] Dropping partition')
 client.command(f"ALTER TABLE igvf_logs.s3_access_logs DROP PARTITION IF EXISTS '{date}'")
 
+print(f'[{date}] Inserting from s3://igvf-parsed-logs/parquet/date={date}/')
 client.command(f'''
     INSERT INTO igvf_logs.s3_access_logs
     SELECT
@@ -61,4 +63,7 @@ client.command(f'''
     )
 ''')
 
-print(f'Loaded logs for {date}')
+row_count = client.query(
+    f"SELECT count() FROM igvf_logs.s3_access_logs WHERE date = '{date}'"
+).first_row[0]
+print(f'[{date}] Loaded {row_count:,} rows')
