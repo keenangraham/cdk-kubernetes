@@ -1639,6 +1639,92 @@ class CoderSecrets(Construct):
         db_secret.node.add_dependency(external_secrets_operator.chart)
 
 
+class ClickHouseLoaderSecrets(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        external_secrets_operator: ExternalSecretsOperator,
+        data_stack_namespace: DataStackNamespace,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        store = cluster.add_manifest(
+            'ClickHouseLoaderAwsCredentialsStore',
+            {
+                'apiVersion': 'external-secrets.io/v1beta1',
+                'kind': 'SecretStore',
+                'metadata': {
+                    'name': 'clickhouse-loader-aws-credentials-store',
+                    'namespace': data_stack_namespace.name,
+                },
+                'spec': {
+                    'provider': {
+                        'aws': {
+                            'service': 'SecretsManager',
+                            'region': 'us-west-2',
+                            'auth': {
+                                'jwt': {
+                                    'serviceAccountRef': {
+                                        'name': 'spark-bucket-read-sa',
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        )
+
+        store.node.add_dependency(data_stack_namespace.manifest)
+
+        secret = cluster.add_manifest(
+            'ClickHouseLoaderAwsCredentials',
+            {
+                'apiVersion': 'external-secrets.io/v1beta1',
+                'kind': 'ExternalSecret',
+                'metadata': {
+                    'name': 'clickhouse-loader-aws-credentials-eso',
+                    'namespace': data_stack_namespace.name,
+                },
+                'spec': {
+                    'refreshInterval': '0',
+                    'secretStoreRef': {
+                        'name': 'clickhouse-loader-aws-credentials-store',
+                        'kind': 'SecretStore',
+                    },
+                    'target': {
+                        'name': 'clickhouse-loader-aws-credentials',
+                    },
+                    'data': [
+                        {
+                            'secretKey': 'AWS_ACCESS_KEY_ID',
+                            'remoteRef': {
+                                'key': 'test/spark/read-cross-acccount-bucket',
+                                'property': 'ACCESS_KEY',
+                            }
+                        },
+                        {
+                            'secretKey': 'AWS_SECRET_ACCESS_KEY',
+                            'remoteRef': {
+                                'key': 'test/spark/read-cross-acccount-bucket',
+                                'property': 'SECRET_ACCESS_KEY',
+                            }
+                        },
+                    ]
+                }
+            }
+        )
+
+        secret.node.add_dependency(data_stack_namespace.manifest)
+        secret.node.add_dependency(store)
+        secret.node.add_dependency(external_secrets_operator.chart)
+
+
 class AirflowLoggingServiceAccount(Construct):
 
     def __init__(
@@ -1973,6 +2059,14 @@ class KubernetesStack(Stack):
         coder_secrets = CoderSecrets(
             self,
             'CoderSecrets',
+            cluster=cluster,
+            external_secrets_operator=external_secrets_operator,
+            data_stack_namespace=data_stack_namespace,
+        )
+
+        clickhouse_loader_secrets = ClickHouseLoaderSecrets(
+            self,
+            'ClickHouseLoaderSecrets',
             cluster=cluster,
             external_secrets_operator=external_secrets_operator,
             data_stack_namespace=data_stack_namespace,
