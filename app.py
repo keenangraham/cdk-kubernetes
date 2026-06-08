@@ -960,6 +960,60 @@ class ArgoCD(Construct):
         self.manifest.node.add_dependency(cluster.alb_controller)
 
 
+class ClickHouseOperator(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        argocd: ArgoCD,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        namespace = 'clickhouse-operator-system'
+
+        manifest = cluster.add_manifest(
+            'ClickHouseOperatorApp',
+            {
+                'apiVersion': 'argoproj.io/v1alpha1',
+                'kind': 'Application',
+                'metadata': {
+                    'name': 'clickhouse-operator',
+                    'namespace': 'argocd',
+                },
+                'spec': {
+                    'project': 'default',
+                    'source': {
+                        'repoURL': 'ghcr.io/clickhouse',
+                        'chart': 'clickhouse-operator-helm',
+                        'targetRevision': '0.0.5',
+                        'helm': {
+                            'values': 'webhook:\n  enable: false\ncertManager:\n  enable: false\n'
+                        }
+                    },
+                    'destination': {
+                        'server': 'https://kubernetes.default.svc',
+                        'namespace': namespace,
+                    },
+                    'syncPolicy': {
+                        'automated': {
+                            'prune': True,
+                            'selfHeal': True,
+                        },
+                        'syncOptions': [
+                            'CreateNamespace=true',
+                        ]
+                    }
+                }
+            }
+        )
+
+        manifest.node.add_dependency(argocd.manifest)
+
+
 class DataStackNamespace(Construct):
 
     def __init__(self, scope: Construct, construct_id: str, *, cluster: Cluster, **kwargs) -> None:
@@ -1773,6 +1827,13 @@ class KubernetesStack(Stack):
 
         argocd.manifest.node.add_dependency(
             external_dns.chart
+        )
+
+        clickhouse_operator = ClickHouseOperator(
+            self,
+            'ClickHouseOperator',
+            cluster=cluster,
+            argocd=argocd,
         )
 
         cluster_autoscaler = ClusterAutoscaler(
