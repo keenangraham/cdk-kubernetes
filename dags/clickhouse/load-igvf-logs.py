@@ -45,7 +45,10 @@ client.command('''
 ''')
 
 print(f'[{date}] Dropping partition')
-client.command(f"ALTER TABLE igvf_logs.s3_access_logs DROP PARTITION IF EXISTS '{date}'")
+try:
+    client.command(f"ALTER TABLE igvf_logs.s3_access_logs DROP PARTITION '{date}'")
+except Exception:
+    pass
 
 print(f'[{date}] Inserting from s3://igvf-parsed-logs/parquet/date={date}/')
 client.command(f'''
