@@ -1033,6 +1033,93 @@ class DataStackNamespace(Construct):
         )
 
 
+class DataStackClickHouse(Construct):
+
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        *,
+        cluster: Cluster,
+        external_secrets_operator: ExternalSecretsOperator,
+        data_stack_namespace: DataStackNamespace,
+        **kwargs: Any
+    ) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        password_secret = cluster.add_manifest(
+            'ClickHousePassword',
+            {
+                'apiVersion': 'external-secrets.io/v1beta1',
+                'kind': 'ExternalSecret',
+                'metadata': {
+                    'name': 'clickhouse-password-eso',
+                    'namespace': data_stack_namespace.name,
+                },
+                'spec': {
+                    'refreshInterval': '0',
+                    'target': {
+                        'name': 'clickhouse-password',
+                        'template': {
+                            'data': {
+                                'password': '{{ .password }}',
+                            }
+                        }
+                    },
+                    'dataFrom': [
+                        {
+                            'sourceRef': {
+                                'generatorRef': {
+                                    'apiVersion': 'generators.external-secrets.io/v1alpha1',
+                                    'kind': 'ClusterGenerator',
+                                    'name': 'password-generator',
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        )
+
+        password_secret.node.add_dependency(data_stack_namespace.manifest)
+        password_secret.node.add_dependency(external_secrets_operator.chart)
+
+        argo_app = cluster.add_manifest(
+            'ClickHouseArgoApp',
+            {
+                'apiVersion': 'argoproj.io/v1alpha1',
+                'kind': 'Application',
+                'metadata': {
+                    'name': 'clickhouse-dev',
+                    'namespace': 'argocd',
+                },
+                'spec': {
+                    'project': 'default',
+                    'source': {
+                        'repoURL': 'https://github.com/keenangraham/cdk-kubernetes',
+                        'targetRevision': 'main',
+                        'path': 'apps/data-stack/clickhouse/dev',
+                    },
+                    'destination': {
+                        'server': 'https://kubernetes.default.svc',
+                        'namespace': data_stack_namespace.name,
+                    },
+                    'syncPolicy': {
+                        'automated': {
+                            'prune': True,
+                            'selfHeal': True,
+                        },
+                        'syncOptions': [
+                            'ServerSideApply=true',
+                        ]
+                    }
+                }
+            }
+        )
+
+        argo_app.node.add_dependency(password_secret)
+
+
 spark_aws_secret_objects = """- objectName: "test/spark/read-cross-acccount-bucket"
   objecttype: "secretsmanager"
   jmesPath:
@@ -1886,6 +1973,14 @@ class KubernetesStack(Stack):
         coder_secrets = CoderSecrets(
             self,
             'CoderSecrets',
+            cluster=cluster,
+            external_secrets_operator=external_secrets_operator,
+            data_stack_namespace=data_stack_namespace,
+        )
+
+        data_stack_clickhouse = DataStackClickHouse(
+            self,
+            'ClickHouse',
             cluster=cluster,
             external_secrets_operator=external_secrets_operator,
             data_stack_namespace=data_stack_namespace,
