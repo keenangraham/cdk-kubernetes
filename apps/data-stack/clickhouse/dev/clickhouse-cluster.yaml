@@ -22,7 +22,8 @@ spec:
         memory: "8Gi"
   keeperClusterRef:
     name: clickhouse-keeper
-  serviceAccountName: spark-bucket-read-sa
+  podTemplate:
+    serviceAccountName: spark-bucket-read-sa
   settings:
     defaultUserPassword:
       secret:
