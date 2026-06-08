@@ -8,7 +8,7 @@ supersetNode:
 
 bootstrapScript: |
   #!/bin/bash
-  uv pip install .[postgres] duckdb-engine &&\
+  uv pip install .[postgres] duckdb-engine clickhouse-connect &&\
   if [ ! -f ~/bootstrap ]; then echo "Running Superset with uid {{ .Values.runAsUser }}" > ~/bootstrap; fi
 
 configOverrides:
@@ -22,7 +22,6 @@ configOverrides:
 envFromSecrets:
   - superset-secret-key
   - superset-aws-credentials
-
 
 init:
   adminUser:
