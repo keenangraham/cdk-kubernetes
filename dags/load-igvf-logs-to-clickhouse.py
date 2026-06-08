@@ -24,11 +24,9 @@ def load_igvf_logs_to_clickhouse():
     KubernetesPodOperator(
         task_id='load-igvf-logs-to-clickhouse',
         namespace='data-stack-dev',
-        image='python:3.12-slim',
+        image='public.ecr.aws/cherry-lab/cherry-lab:clickhouse-loader',
         cmds=['bash', '-c'],
         arguments=[
-            f'apt-get update -qq && apt-get install -y -q curl && '
-            f'pip install -q clickhouse-connect && '
             f'curl -fsSL {_SCRIPT_URL} | python - {{{{ ds }}}}'
         ],
         env_from=[
