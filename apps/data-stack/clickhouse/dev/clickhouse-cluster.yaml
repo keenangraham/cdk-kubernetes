@@ -13,6 +13,17 @@ spec:
       requests:
         storage: 50Gi
   containerTemplate:
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: clickhouse-loader-aws-credentials
+            key: AWS_ACCESS_KEY_ID
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: clickhouse-loader-aws-credentials
+            key: AWS_SECRET_ACCESS_KEY
     resources:
       requests:
         cpu: "1"
@@ -22,8 +33,6 @@ spec:
         memory: "8Gi"
   keeperClusterRef:
     name: clickhouse-keeper
-  podTemplate:
-    serviceAccountName: spark-bucket-read-sa
   settings:
     defaultUserPassword:
       secret:
