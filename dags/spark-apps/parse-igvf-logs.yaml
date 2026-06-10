@@ -13,10 +13,10 @@ spec:
   sparkVersion: 4.1.2
   timeToLiveSeconds: 600
   driver:
-    labels: 
+    labels:
       app.kubernetes.io/name: "parse-igvf-logs"
     coreRequest: "1000m"
-    memory: "2048M"
+    memory: "4096M"
     serviceAccount: spark-bucket-read-sa
     env:
       - name: AWS_ACCESS_KEY_ID
