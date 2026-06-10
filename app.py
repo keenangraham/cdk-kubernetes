@@ -1129,6 +1129,16 @@ spark_aws_secret_objects = """- objectName: "test/spark/read-cross-acccount-buck
       objectAlias: "SECRET_ACCESS_KEY"
 """
 
+spark_igvf_files_logs_secret_objects = """- objectName: "read-igvf-files-logs"
+  objecttype: "secretsmanager"
+  jmesPath:
+    - path: "ACCESS_KEY"
+      objectAlias: "IGVF_FILES_LOGS_ACCESS_KEY"
+    - path: "SECRET_ACCESS_KEY"
+      objectAlias: "IGVF_FILES_LOGS_SECRET_ACCESS_KEY"
+"""
+
+
 
 class SparkBucketReadServiceAccount(Construct):
 
@@ -1168,7 +1178,8 @@ class SparkBucketReadServiceAccount(Construct):
                     'secretsmanager:DescribeSecret',
                 ],
                 resources=[
-                    'arn:aws:secretsmanager:us-west-2:618537831167:secret:test/spark/read-cross-acccount-bucket-TBr0Gs'
+                    'arn:aws:secretsmanager:us-west-2:618537831167:secret:test/spark/read-cross-acccount-bucket-TBr0Gs',
+                    'arn:aws:secretsmanager:us-west-2:618537831167:secret:read-igvf-files-logs-J8SRrR',
                 ],
             )
         )
@@ -1250,13 +1261,55 @@ class SparkBucketReadServiceAccount(Construct):
                                 }
                             ],
                             "type": "Opaque"
-                        }
+                        },
                     ],
                 }
             }
         )
 
         secrets_provider.node.add_dependency(data_stack_namespace.manifest)
+
+        igvf_files_logs_secrets_provider = cluster.add_manifest(
+            'spark-igvf-files-logs-secrets-provider',
+            {
+                "apiVersion": "secrets-store.csi.x-k8s.io/v1",
+                "kind": "SecretProviderClass",
+                "metadata": {
+                    "name": "spark-igvf-files-logs-secrets",
+                    "namespace": data_stack_namespace.name
+                },
+                "spec": {
+                    "provider": "aws",
+                    "parameters": {
+                        "objects": spark_igvf_files_logs_secret_objects
+                    },
+                    "secretObjects": [
+                        {
+                            "secretName": "aws-spark-igvf-files-logs-access-key",
+                            "data": [
+                                {
+                                    "objectName": "IGVF_FILES_LOGS_ACCESS_KEY",
+                                    "key": "ACCESS_KEY"
+                                }
+                            ],
+                            "type": "Opaque"
+                        },
+                        {
+                            "secretName": "aws-spark-igvf-files-logs-secret-access-key",
+                            "data": [
+                                {
+                                    "objectName": "IGVF_FILES_LOGS_SECRET_ACCESS_KEY",
+                                    "key": "SECRET_ACCESS_KEY"
+                                }
+                            ],
+                            "type": "Opaque"
+                        }
+                    ],
+                }
+            }
+        )
+
+        igvf_files_logs_secrets_provider.node.add_dependency(data_stack_namespace.manifest)
 
         read_role = cluster.add_manifest(
             'spark-bucket-read-role',

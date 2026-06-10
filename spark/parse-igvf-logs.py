@@ -1,12 +1,21 @@
 import os
+from datetime import date as date_type
 
+from pyspark import SparkConf
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, regexp_extract
 
+CUTOVER_DATE = date_type(2025, 9, 16)
+
 
 def main():
+    conf = SparkConf()
+    conf.set("spark.hadoop.fs.s3a.bucket.igvf-files-logs.access.key", os.environ["IGVF_FILES_LOGS_ACCESS_KEY_ID"])
+    conf.set("spark.hadoop.fs.s3a.bucket.igvf-files-logs.secret.key", os.environ["IGVF_FILES_LOGS_SECRET_ACCESS_KEY"])
+
     spark = SparkSession.builder \
         .appName("S3 Log Reader") \
+        .config(conf=conf) \
         .getOrCreate()
 
     log_regex_pattern = r'([^ ]*) ([^ ]*) \[(.*?)\] ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ("[^"]+"|-) (\d+|-|-) ([^ ]*) (\d+|-|-) (\d+|-|-) (\d+|-|-) (\d+|-|-) ("[^"]*"|-) ("[^"]*"|-) ([^ ]*)'
@@ -15,7 +24,10 @@ def main():
     print("*****************")
     print('DATE IS:' + date)
     print("*****************")
-    df = spark.read.text(f's3a://igvf-public-logs/{date}*')
+
+    parsed_date = date_type.fromisoformat(date)
+    source_bucket = 'igvf-files-logs' if parsed_date < CUTOVER_DATE else 'igvf-public-logs'
+    df = spark.read.text(f's3a://{source_bucket}/{date}*')
 
     parsed_df = df.select(
         regexp_extract(col('value'), log_regex_pattern, 1).alias('bucket_owner'),

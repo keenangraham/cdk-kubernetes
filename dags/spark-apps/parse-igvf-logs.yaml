@@ -29,11 +29,23 @@ spec:
           secretKeyRef:
             name: aws-spark-secret-access-key
             key: SECRET_ACCESS_KEY
+      - name: IGVF_FILES_LOGS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws-spark-igvf-files-logs-access-key
+            key: ACCESS_KEY
+      - name: IGVF_FILES_LOGS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws-spark-igvf-files-logs-secret-access-key
+            key: SECRET_ACCESS_KEY
       - name: DATE
         value: "{{ ds }}"
     volumeMounts:
       - name: aws-creds
         mountPath: /tmp/.aws-creds
+      - name: igvf-files-logs-creds
+        mountPath: /tmp/.igvf-files-logs-creds
   volumes:
     - name: aws-creds
       csi:
@@ -41,6 +53,12 @@ spec:
         readOnly: true
         volumeAttributes:
           secretProviderClass: "spark-aws-secrets"
+    - name: igvf-files-logs-creds
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: "spark-igvf-files-logs-secrets"
   executor:
     cores: 4
     coreRequest: "1000m"
@@ -57,9 +75,21 @@ spec:
           secretKeyRef:
             name: aws-spark-secret-access-key
             key: SECRET_ACCESS_KEY
+      - name: IGVF_FILES_LOGS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws-spark-igvf-files-logs-access-key
+            key: ACCESS_KEY
+      - name: IGVF_FILES_LOGS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws-spark-igvf-files-logs-secret-access-key
+            key: SECRET_ACCESS_KEY
     volumeMounts:
       - name: aws-creds
         mountPath: /tmp/.aws-creds
+      - name: igvf-files-logs-creds
+        mountPath: /tmp/.igvf-files-logs-creds
   volumes:
     - name: aws-creds
       csi:
@@ -67,6 +97,12 @@ spec:
         readOnly: true
         volumeAttributes:
           secretProviderClass: "spark-aws-secrets"
+    - name: igvf-files-logs-creds
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: "spark-igvf-files-logs-secrets"
   dynamicAllocation:
     enabled: true
     initialExecutors: 2
