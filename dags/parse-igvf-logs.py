@@ -20,7 +20,6 @@ def parse_igvf_logs():
         task_id='parse-igvf-logs',
         namespace='data-stack-dev',
         application_file='spark-apps/parse-igvf-logs.yaml',
-        on_finish_action='delete_pod',
     )
 
 parse_igvf_logs()
