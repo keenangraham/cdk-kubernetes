@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from pendulum import timezone
 
 from airflow.sdk import dag
@@ -20,6 +20,8 @@ def parse_igvf_logs():
         task_id='parse-igvf-logs',
         namespace='data-stack-dev',
         application_file='spark-apps/parse-igvf-logs.yaml',
+        retries=1,
+        retry_delay=timedelta(minutes=2),
     )
 
 parse_igvf_logs()
