@@ -50,7 +50,7 @@ def main():
         regexp_extract(col('value'), log_regex_pattern, 18).alias('version_id'),
     )
     output_path = f's3a://igvf-parsed-logs/parquet/date={date}'
-    parsed_df.repartition(1).write.mode('overwrite').parquet(output_path)
+    parsed_df.coalesce(1).write.mode('overwrite').parquet(output_path)
 
 
 if __name__ == "__main__":
