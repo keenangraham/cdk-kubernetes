@@ -20,6 +20,7 @@ def parse_igvf_logs():
         task_id='parse-igvf-logs',
         namespace='data-stack-dev',
         application_file='spark-apps/parse-igvf-logs.yaml',
+        delete_on_termination=False,
         retries=1,
         retry_delay=timedelta(minutes=2),
     )
