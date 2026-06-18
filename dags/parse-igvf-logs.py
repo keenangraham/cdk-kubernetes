@@ -9,7 +9,7 @@ from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKu
 
 @dag(
     schedule=CronDataIntervalTimetable(
-        '0 10 * * *',
+        '0 4 * * *',
         timezone='America/Los_Angeles',
     ),
     start_date=datetime(2026, 5, 1, tzinfo=timezone("America/Los_Angeles")),

@@ -14,7 +14,7 @@ _SCRIPT_URL = (
 
 @dag(
     schedule=CronDataIntervalTimetable(
-        '0 14 * * *',
+        '0 6 * * *',
         timezone='America/Los_Angeles',
     ),
     start_date=datetime(2026, 5, 1, tzinfo=timezone("America/Los_Angeles")),
