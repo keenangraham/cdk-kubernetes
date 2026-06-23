@@ -1,0 +1,82 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: parse-encode-logs
+  namespace: data-stack-dev
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: public.ecr.aws/cherry-lab/cherry-lab:spark-4.1.2-s3.1
+  imagePullPolicy: IfNotPresent
+  mainApplicationFile: https://raw.githubusercontent.com/keenangraham/cdk-kubernetes/refs/heads/main/spark/parse-encode-logs.py
+  sparkVersion: 4.1.2
+  timeToLiveSeconds: 600
+  driver:
+    labels:
+      app.kubernetes.io/name: "parse-encode-logs"
+    annotations:
+      karpenter.sh/do-not-disrupt: "true"
+    coreRequest: "2000m"
+    memory: "4096M"
+    serviceAccount: spark-bucket-read-sa
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws-spark-access-key
+            key: ACCESS_KEY
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws-spark-secret-access-key
+            key: SECRET_ACCESS_KEY
+      - name: DATE
+        value: "{{ ds }}"
+    volumeMounts:
+      - name: aws-creds
+        mountPath: /tmp/.aws-creds
+  volumes:
+    - name: aws-creds
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: "spark-aws-secrets"
+  executor:
+    annotations:
+      karpenter.sh/do-not-disrupt: "true"
+    cores: 2
+    coreRequest: "1000m"
+    memory: "2048M"
+    serviceAccount: spark-bucket-read-sa
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws-spark-access-key
+            key: ACCESS_KEY
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws-spark-secret-access-key
+            key: SECRET_ACCESS_KEY
+    volumeMounts:
+      - name: aws-creds
+        mountPath: /tmp/.aws-creds
+  volumes:
+    - name: aws-creds
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: "spark-aws-secrets"
+  dynamicAllocation:
+    enabled: true
+    initialExecutors: 6
+    maxExecutors: 10
+    minExecutors: 1
+  sparkConf:
+    "spark.hadoop.fs.s3a.connection.maximum": "100"
+    "spark.hadoop.fs.s3a.fast.upload": "true"
+    "spark.hadoop.fs.s3a.multipart.size": "67108864"
