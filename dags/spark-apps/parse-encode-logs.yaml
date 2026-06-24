@@ -17,8 +17,8 @@ spec:
       app.kubernetes.io/name: "parse-encode-logs"
     annotations:
       karpenter.sh/do-not-disrupt: "true"
-    coreRequest: "2000m"
-    memory: "8192M"
+    coreRequest: "1000m"
+    memory: "4096M"
     serviceAccount: spark-bucket-read-sa
     env:
       - name: AWS_ACCESS_KEY_ID
@@ -47,7 +47,7 @@ spec:
     annotations:
       karpenter.sh/do-not-disrupt: "true"
     cores: 2
-    coreRequest: "1000m"
+    coreRequest: "500m"
     memory: "2048M"
     serviceAccount: spark-bucket-read-sa
     env:
