@@ -11,7 +11,7 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 200Gi
+        storage: 300Gi
   containerTemplate:
     env:
       - name: AWS_ACCESS_KEY_ID
