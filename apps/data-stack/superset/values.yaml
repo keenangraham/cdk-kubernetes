@@ -11,6 +11,9 @@ bootstrapScript: |
   uv pip install .[postgres] duckdb-engine clickhouse-connect &&\
   if [ ! -f ~/bootstrap ]; then echo "Running Superset with uid {{ .Values.runAsUser }}" > ~/bootstrap; fi
 
+extraEnv:
+  GUNICORN_TIMEOUT: "300"
+
 configOverrides:
   secret: |
     SECRET_KEY = os.environ.get('SECRET_KEY')
@@ -18,6 +21,9 @@ configOverrides:
     FEATURE_FLAGS = {
         "ENABLE_TEMPLATE_PROCESSING": True,
     }
+  timeout: |
+    SQLLAB_TIMEOUT = 300
+    SUPERSET_WEBSERVER_TIMEOUT = 300
 
 envFromSecrets:
   - superset-secret-key
